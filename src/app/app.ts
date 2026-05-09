@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ButtonModule } from 'primeng/button';
 import { SelectModule } from 'primeng/select';
 import { TooltipModule } from 'primeng/tooltip';
@@ -10,10 +11,24 @@ import { MetricService } from './core/metric.service';
 
 interface NavItem {
   label: string;
-  icon: string;
+  icon?: string;
+  svgHtml?: SafeHtml;
   route: string;
   exact?: boolean;
 }
+
+const BRAIN_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+  stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/>
+  <path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/>
+  <path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"/>
+  <path d="M17.599 6.5a3 3 0 0 0 .399-1.375"/>
+  <path d="M6.003 5.125A3 3 0 0 0 6.401 6.5"/>
+  <path d="M3.477 10.896a4 4 0 0 1 .585-.396"/>
+  <path d="M19.938 10.5a4 4 0 0 1 .585.396"/>
+  <path d="M6 18a4 4 0 0 1-1.967-.516"/>
+  <path d="M19.967 17.484A4 4 0 0 1 18 18"/>
+</svg>`;
 
 @Component({
   selector: 'app-root',
@@ -27,19 +42,26 @@ interface NavItem {
 export class App {
   protected productService = inject(ProductService);
   protected metricService  = inject(MetricService);
+  private sanitizer        = inject(DomSanitizer);
 
   sidebarCollapsed = signal(false);
 
-  navItems: NavItem[] = [
-    { label: 'Visão Geral',       icon: 'pi-home',       route: '/',              exact: true },
-    { label: 'Experimentos',      icon: 'pi-flask',       route: '/experimentos' },
-    { label: 'Tendências',        icon: 'pi-chart-line',  route: '/tendencias' },
-    { label: 'Lições Aprendidas', icon: 'pi-book',        route: '/licoes' },
-  ];
+  navItems: NavItem[];
+  bottomNavItems: NavItem[];
 
-  bottomNavItems: NavItem[] = [
-    { label: 'Configurações', icon: 'pi-cog', route: '/configuracoes' },
-  ];
+  constructor() {
+    const brainSvg = this.sanitizer.bypassSecurityTrustHtml(BRAIN_SVG);
+    this.navItems = [
+      { label: 'Visão Geral',        icon: 'pi-home',      route: '/',                 exact: true },
+      { label: 'Experimentos',       icon: 'pi-flask',      route: '/experimentos' },
+      { label: 'Tendências',         icon: 'pi-chart-line', route: '/tendencias' },
+      { label: 'Lições Aprendidas',  icon: 'pi-book',       route: '/licoes' },
+      { label: 'Memória de Produto', svgHtml: brainSvg,     route: '/memoria-produto' },
+    ];
+    this.bottomNavItems = [
+      { label: 'Configurações', icon: 'pi-cog', route: '/configuracoes' },
+    ];
+  }
 
   toggleSidebar(): void {
     this.sidebarCollapsed.update(v => !v);

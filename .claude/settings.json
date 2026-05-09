@@ -17,7 +17,12 @@
       "WebFetch(domain:www.underconsideration.com)",
       "WebFetch(domain:whatthelogo.com)",
       "WebFetch(domain:brandfetch.com)",
-      "Bash(npx ng *)"
+      "Bash(npx ng *)",
+      "Bash(Select-String \"book|brain|memory|know|learn|archive|history|graduation|bookmark|database|chip|cpu|cpu-chip\" -SimpleMatch)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\guilh\\\\TestWise\\\\testwise\\\\node_modules\\\\primeng\" -Filter \"*icon*\" -Recurse -ErrorAction SilentlyContinue)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(dir \"c:\\\\Users\\\\guilh\\\\TestWise\\\\testwise\\\\node_modules\\\\primeng\" /b)",
+      "Bash(findstr \"tab\")"
     ]
   }
 }

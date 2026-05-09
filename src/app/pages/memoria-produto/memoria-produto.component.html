@@ -1,0 +1,170 @@
+<div class="memoria-produto">
+
+  <!-- ── Header ────────────────────────────────────────────── -->
+  <div class="page-header">
+    <div class="header-content">
+      <div>
+        <h1 class="page-title">Memória de Produto</h1>
+        <p class="page-subtitle">Repositório de aprendizados — Mobile Banking</p>
+      </div>
+      <div class="header-stats">
+        <div class="stat-chip">
+          <span class="stat-value">{{ stats.total }}</span>
+          <span class="stat-label">experimentos</span>
+        </div>
+        <div class="stat-chip success">
+          <span class="stat-value">{{ stats.funcionaram }}</span>
+          <span class="stat-label">funcionaram</span>
+        </div>
+        <div class="stat-chip danger">
+          <span class="stat-value">{{ stats.naoFuncionaram }}</span>
+          <span class="stat-label">não funcionaram</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── AI Recommendations ─────────────────────────────────── -->
+  <div class="ai-recommendations">
+    <div class="ai-header">
+      <div class="ai-badge">
+        <i class="pi pi-sparkles"></i>
+        IA
+      </div>
+      <div>
+        <h2 class="ai-title">Próximas hipóteses recomendadas</h2>
+        <p class="ai-subtitle">Baseado na análise de {{ stats.total }} experimentos executados neste produto</p>
+      </div>
+    </div>
+
+    <div class="hipoteses-grid">
+      @for (h of hipoteses; track h.titulo) {
+        <div class="hipotese-card">
+          <div class="hipotese-header">
+            <p-tag [value]="'Confiança ' + h.confianca" [severity]="h.severity" />
+            <span class="hipotese-metrica">
+              <i class="pi pi-chart-line"></i> {{ h.metricaAlvo }}
+            </span>
+          </div>
+          <h3 class="hipotese-titulo">{{ h.titulo }}</h3>
+          <p class="hipotese-racional">{{ h.racional }}</p>
+          <div class="hipotese-footer">
+            <div class="hipotese-impacto">
+              <span class="impacto-label">Impacto estimado</span>
+              <span class="impacto-valor">{{ h.impactoEstimado }}</span>
+            </div>
+            <p-button
+              label="Criar experimento"
+              icon="pi pi-plus"
+              size="small"
+              [outlined]="true"
+            />
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- ── Learnings Tabs ─────────────────────────────────────── -->
+  <p-tabs value="0">
+    <p-tablist>
+      <p-tab value="0">
+        <i class="pi pi-check-circle"></i>
+        O que funcionou ({{ funcionaram.length }})
+      </p-tab>
+      <p-tab value="1">
+        <i class="pi pi-times-circle"></i>
+        O que não funcionou ({{ naoFuncionaram.length }})
+      </p-tab>
+      <p-tab value="2">
+        <i class="pi pi-lightbulb"></i>
+        Insights por área
+      </p-tab>
+    </p-tablist>
+
+    <p-tabpanels>
+
+      <!-- Tab 1: O que funcionou -->
+      <p-tabpanel value="0">
+        <div class="aprendizados-list">
+          @for (item of funcionaram; track item.experimento) {
+            <div class="aprendizado-card">
+              <div class="card-indicator success"></div>
+              <div class="card-content">
+                <div class="card-header">
+                  <div class="card-meta">
+                    <p-tag [value]="item.area" severity="secondary" />
+                    <span class="card-periodo">
+                      <i class="pi pi-calendar"></i> {{ item.periodo }}
+                    </span>
+                  </div>
+                  <div class="card-impact success">
+                    <i class="pi pi-arrow-up-right"></i>
+                    {{ item.metrica }} {{ item.impacto }}
+                  </div>
+                </div>
+                <h3 class="card-titulo">{{ item.experimento }}</h3>
+                <p class="card-insight">{{ item.insight }}</p>
+              </div>
+            </div>
+          }
+        </div>
+      </p-tabpanel>
+
+      <!-- Tab 2: O que não funcionou -->
+      <p-tabpanel value="1">
+        <div class="aprendizados-list">
+          @for (item of naoFuncionaram; track item.experimento) {
+            <div class="aprendizado-card">
+              <div class="card-indicator danger"></div>
+              <div class="card-content">
+                <div class="card-header">
+                  <div class="card-meta">
+                    <p-tag [value]="item.area" severity="secondary" />
+                    <span class="card-periodo">
+                      <i class="pi pi-calendar"></i> {{ item.periodo }}
+                    </span>
+                  </div>
+                  <div class="card-impact danger">
+                    <i class="pi pi-arrow-down-right"></i>
+                    {{ item.metrica }} {{ item.impacto }}
+                  </div>
+                </div>
+                <h3 class="card-titulo">{{ item.experimento }}</h3>
+                <p class="card-insight">{{ item.insight }}</p>
+                @if (item.aprendizado) {
+                  <div class="card-aprendizado">
+                    <i class="pi pi-lightbulb"></i>
+                    <span>{{ item.aprendizado }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </p-tabpanel>
+
+      <!-- Tab 3: Insights por área -->
+      <p-tabpanel value="2">
+        <div class="insights-grid">
+          @for (area of insightAreas; track area.tema) {
+            <div class="insight-area-card">
+              <div class="area-header">
+                <i class="pi {{ area.icon }} area-icon"></i>
+                <h3 class="area-tema">{{ area.tema }}</h3>
+              </div>
+              <p class="area-resumo">{{ area.resumo }}</p>
+              <ul class="area-pontos">
+                @for (ponto of area.pontos; track ponto) {
+                  <li>{{ ponto }}</li>
+                }
+              </ul>
+            </div>
+          }
+        </div>
+      </p-tabpanel>
+
+    </p-tabpanels>
+  </p-tabs>
+
+</div>

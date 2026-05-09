@@ -97,6 +97,19 @@
     text-align: center;
   }
 
+  .nav-svg-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    svg {
+      width: 18px;
+      height: 18px;
+      display: block;
+      color: inherit;
+    }
+  }
+
   .nav-label {
     font-size: 0.875rem;
     transition: opacity 0.2s ease;
