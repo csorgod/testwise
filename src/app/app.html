@@ -15,14 +15,32 @@
            routerLinkActive="active"
            [routerLinkActiveOptions]="{ exact: !!item.exact }"
            [pTooltip]="sidebarCollapsed() ? item.label : ''"
-           tooltipPosition="right">
+           tooltipPosition="right"
+           (click)="item.children && toggleNav(item)">
           @if (item.svgHtml) {
             <span class="nav-icon nav-svg-icon" [innerHTML]="item.svgHtml"></span>
           } @else {
             <i class="pi {{ item.icon }} nav-icon"></i>
           }
           <span class="nav-label">{{ item.label }}</span>
+          @if (item.children && !sidebarCollapsed()) {
+            <i class="pi nav-chevron"
+               [class.pi-chevron-down]="item.expanded"
+               [class.pi-chevron-right]="!item.expanded"></i>
+          }
         </a>
+
+        @if (item.children && item.expanded && !sidebarCollapsed()) {
+          @for (child of item.children; track child.route) {
+            <a class="nav-item nav-subitem"
+               [routerLink]="child.route"
+               routerLinkActive="active"
+               tooltipPosition="right">
+              <i class="pi {{ child.icon }} nav-icon"></i>
+              <span class="nav-label">{{ child.label }}</span>
+            </a>
+          }
+        }
       }
     </nav>
 

@@ -11,6 +11,8 @@ interface NavItem {
   svgHtml?: SafeHtml;
   route: string;
   exact?: boolean;
+  children?: NavItem[];
+  expanded?: boolean;
 }
 
 const BRAIN_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
@@ -46,11 +48,15 @@ export class App {
   constructor() {
     const brainSvg = this.sanitizer.bypassSecurityTrustHtml(BRAIN_SVG);
     this.navItems = [
-      { label: 'Visão Geral',        icon: 'pi-home',      route: '/',                 exact: true },
-      { label: 'Experimentos',       icon: 'pi-flask',      route: '/experimentos' },
-      { label: 'Tendências',         icon: 'pi-chart-line', route: '/tendencias' },
-      { label: 'Lições Aprendidas',  icon: 'pi-book',       route: '/licoes' },
-      { label: 'Memória de Produto', svgHtml: brainSvg,     route: '/memoria-produto' },
+      { label: 'Visão Geral',        icon: 'pi-home',          route: '/',                 exact: true },
+      { label: 'Experimentos',       icon: 'pi-chart-scatter', route: '/experimentos' },
+      {
+        label: 'Métricas', icon: 'pi-gauge', route: '/metricas', expanded: true,
+        children: [
+          { label: 'Tendências', icon: 'pi-chart-line', route: '/tendencias' },
+        ],
+      },
+      { label: 'Memória de Produto', svgHtml: brainSvg,        route: '/memoria-produto' },
     ];
     this.bottomNavItems = [
       { label: 'Configurações', icon: 'pi-cog', route: '/configuracoes' },
@@ -59,5 +65,9 @@ export class App {
 
   toggleSidebar(): void {
     this.sidebarCollapsed.update(v => !v);
+  }
+
+  toggleNav(item: NavItem): void {
+    item.expanded = !item.expanded;
   }
 }

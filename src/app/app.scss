@@ -114,6 +114,31 @@
     font-size: 0.875rem;
     transition: opacity 0.2s ease;
   }
+
+  .nav-chevron {
+    font-size: 0.65rem;
+    margin-left: auto;
+    flex-shrink: 0;
+    opacity: 0.5;
+    transition: opacity 0.15s;
+  }
+
+  &:hover .nav-chevron { opacity: 0.8; }
+}
+
+.nav-subitem {
+  padding-left: 2.75rem;
+  color: #9ca3af;
+
+  .nav-icon { font-size: 0.85rem; }
+  .nav-label { font-size: 0.82rem; }
+
+  &:hover { color: var(--itau-orange); }
+
+  &.active {
+    color: var(--itau-orange);
+    font-weight: 600;
+  }
 }
 
 .sidebar-bottom {
