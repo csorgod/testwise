@@ -3,22 +3,42 @@
   <!-- ── Header ────────────────────────────────────────────── -->
   <div class="page-header">
     <div class="header-content">
-      <div>
+      <div class="header-title-group">
         <h1 class="page-title">Memória de Produto</h1>
-        <p class="page-subtitle">Repositório de aprendizados — Mobile Banking</p>
+        <p class="page-subtitle">Repositório de aprendizados — {{ productService.selected().name }}</p>
       </div>
-      <div class="header-stats">
-        <div class="stat-chip">
-          <span class="stat-value">{{ stats.total }}</span>
-          <span class="stat-label">experimentos</span>
+
+      <div class="header-controls">
+        <div class="selectors-row">
+          <span class="selector-label">Produto</span>
+          <p-select
+            [options]="productService.products"
+            [ngModel]="productService.selected()"
+            (ngModelChange)="productService.select($event)"
+            optionLabel="name"
+            [style]="{ minWidth: '160px' }"
+          />
         </div>
-        <div class="stat-chip success">
-          <span class="stat-value">{{ stats.funcionaram }}</span>
-          <span class="stat-label">funcionaram</span>
-        </div>
-        <div class="stat-chip danger">
-          <span class="stat-value">{{ stats.naoFuncionaram }}</span>
-          <span class="stat-label">não funcionaram</span>
+
+        <div class="header-stats">
+          @if (loading()) {
+            <p-skeleton width="64px" height="48px" borderRadius="10px" />
+            <p-skeleton width="72px" height="48px" borderRadius="10px" />
+            <p-skeleton width="84px" height="48px" borderRadius="10px" />
+          } @else {
+            <div class="stat-chip">
+              <span class="stat-value">{{ stats().total }}</span>
+              <span class="stat-label">experimentos</span>
+            </div>
+            <div class="stat-chip success">
+              <span class="stat-value">{{ stats().funcionaram }}</span>
+              <span class="stat-label">funcionaram</span>
+            </div>
+            <div class="stat-chip danger">
+              <span class="stat-value">{{ stats().naoFuncionaram }}</span>
+              <span class="stat-label">não funcionaram</span>
+            </div>
+          }
         </div>
       </div>
     </div>
@@ -33,34 +53,47 @@
       </div>
       <div>
         <h2 class="ai-title">Próximas hipóteses recomendadas</h2>
-        <p class="ai-subtitle">Baseado na análise de {{ stats.total }} experimentos executados neste produto</p>
+        <p class="ai-subtitle">Baseado na análise de {{ stats().total }} experimentos executados neste produto</p>
       </div>
     </div>
 
     <div class="hipoteses-grid">
-      @for (h of hipoteses; track h.titulo) {
-        <div class="hipotese-card">
-          <div class="hipotese-header">
-            <p-tag [value]="'Confiança ' + h.confianca" [severity]="h.severity" />
-            <span class="hipotese-metrica">
-              <i class="pi pi-chart-line"></i> {{ h.metricaAlvo }}
-            </span>
+      @if (loading()) {
+        @for (_ of [1, 2, 3]; track $index) {
+          <div class="hipotese-card-skel">
+            <p-skeleton width="120px" height="22px" borderRadius="6px" />
+            <p-skeleton width="100%" height="18px" borderRadius="4px" />
+            <p-skeleton width="85%" height="18px" borderRadius="4px" />
+            <p-skeleton width="100%" height="56px" borderRadius="4px" />
+            <p-skeleton width="100%" height="1px" />
+            <p-skeleton width="90px" height="30px" borderRadius="6px" />
           </div>
-          <h3 class="hipotese-titulo">{{ h.titulo }}</h3>
-          <p class="hipotese-racional">{{ h.racional }}</p>
-          <div class="hipotese-footer">
-            <div class="hipotese-impacto">
-              <span class="impacto-label">Impacto estimado</span>
-              <span class="impacto-valor">{{ h.impactoEstimado }}</span>
+        }
+      } @else {
+        @for (h of hipoteses(); track h.titulo) {
+          <div class="hipotese-card">
+            <div class="hipotese-header">
+              <p-tag [value]="'Confiança ' + h.confianca" [severity]="h.severity" />
+              <span class="hipotese-metrica">
+                <i class="pi pi-chart-line"></i> {{ h.metricaAlvo }}
+              </span>
             </div>
-            <p-button
-              label="Criar experimento"
-              icon="pi pi-plus"
-              size="small"
-              [outlined]="true"
-            />
+            <h3 class="hipotese-titulo">{{ h.titulo }}</h3>
+            <p class="hipotese-racional">{{ h.racional }}</p>
+            <div class="hipotese-footer">
+              <div class="hipotese-impacto">
+                <span class="impacto-label">Impacto estimado</span>
+                <span class="impacto-valor">{{ h.impactoEstimado }}</span>
+              </div>
+              <p-button
+                label="Criar experimento"
+                icon="pi pi-plus"
+                size="small"
+                [outlined]="true"
+              />
+            </div>
           </div>
-        </div>
+        }
       }
     </div>
   </div>
@@ -70,11 +103,11 @@
     <p-tablist>
       <p-tab value="0">
         <i class="pi pi-check-circle"></i>
-        O que funcionou ({{ funcionaram.length }})
+        O que funcionou ({{ funcionaram().length }})
       </p-tab>
       <p-tab value="1">
         <i class="pi pi-times-circle"></i>
-        O que não funcionou ({{ naoFuncionaram.length }})
+        O que não funcionou ({{ naoFuncionaram().length }})
       </p-tab>
       <p-tab value="2">
         <i class="pi pi-lightbulb"></i>
@@ -87,26 +120,43 @@
       <!-- Tab 1: O que funcionou -->
       <p-tabpanel value="0">
         <div class="aprendizados-list">
-          @for (item of funcionaram; track item.experimento) {
-            <div class="aprendizado-card">
-              <div class="card-indicator success"></div>
-              <div class="card-content">
-                <div class="card-header">
-                  <div class="card-meta">
-                    <p-tag [value]="item.area" severity="secondary" />
-                    <span class="card-periodo">
-                      <i class="pi pi-calendar"></i> {{ item.periodo }}
-                    </span>
+          @if (loading()) {
+            @for (_ of [1, 2, 3]; track $index) {
+              <div class="card-skel">
+                <p-skeleton width="4px" height="100%" borderRadius="0" />
+                <div class="card-skel-body">
+                  <div class="card-skel-row">
+                    <p-skeleton width="80px" height="20px" borderRadius="6px" />
+                    <p-skeleton width="100px" height="14px" borderRadius="4px" />
+                    <p-skeleton width="90px" height="20px" borderRadius="6px" />
                   </div>
-                  <div class="card-impact success">
-                    <i class="pi pi-arrow-up-right"></i>
-                    {{ item.metrica }} {{ item.impacto }}
-                  </div>
+                  <p-skeleton width="70%" height="18px" borderRadius="4px" />
+                  <p-skeleton width="100%" height="40px" borderRadius="4px" />
                 </div>
-                <h3 class="card-titulo">{{ item.experimento }}</h3>
-                <p class="card-insight">{{ item.insight }}</p>
               </div>
-            </div>
+            }
+          } @else {
+            @for (item of funcionaram(); track item.experimento) {
+              <div class="aprendizado-card">
+                <div class="card-indicator success"></div>
+                <div class="card-content">
+                  <div class="card-header">
+                    <div class="card-meta">
+                      <p-tag [value]="item.area" severity="secondary" />
+                      <span class="card-periodo">
+                        <i class="pi pi-calendar"></i> {{ item.periodo }}
+                      </span>
+                    </div>
+                    <div class="card-impact success">
+                      <i class="pi pi-arrow-up-right"></i>
+                      {{ item.metrica }} {{ item.impacto }}
+                    </div>
+                  </div>
+                  <h3 class="card-titulo">{{ item.experimento }}</h3>
+                  <p class="card-insight">{{ item.insight }}</p>
+                </div>
+              </div>
+            }
           }
         </div>
       </p-tabpanel>
@@ -114,54 +164,87 @@
       <!-- Tab 2: O que não funcionou -->
       <p-tabpanel value="1">
         <div class="aprendizados-list">
-          @for (item of naoFuncionaram; track item.experimento) {
-            <div class="aprendizado-card">
-              <div class="card-indicator danger"></div>
-              <div class="card-content">
-                <div class="card-header">
-                  <div class="card-meta">
-                    <p-tag [value]="item.area" severity="secondary" />
-                    <span class="card-periodo">
-                      <i class="pi pi-calendar"></i> {{ item.periodo }}
-                    </span>
+          @if (loading()) {
+            @for (_ of [1, 2, 3]; track $index) {
+              <div class="card-skel">
+                <p-skeleton width="4px" height="100%" borderRadius="0" />
+                <div class="card-skel-body">
+                  <div class="card-skel-row">
+                    <p-skeleton width="80px" height="20px" borderRadius="6px" />
+                    <p-skeleton width="100px" height="14px" borderRadius="4px" />
+                    <p-skeleton width="90px" height="20px" borderRadius="6px" />
                   </div>
-                  <div class="card-impact danger">
-                    <i class="pi pi-arrow-down-right"></i>
-                    {{ item.metrica }} {{ item.impacto }}
-                  </div>
+                  <p-skeleton width="70%" height="18px" borderRadius="4px" />
+                  <p-skeleton width="100%" height="40px" borderRadius="4px" />
+                  <p-skeleton width="100%" height="48px" borderRadius="6px" />
                 </div>
-                <h3 class="card-titulo">{{ item.experimento }}</h3>
-                <p class="card-insight">{{ item.insight }}</p>
-                @if (item.aprendizado) {
-                  <div class="card-aprendizado">
-                    <i class="pi pi-lightbulb"></i>
-                    <span>{{ item.aprendizado }}</span>
-                  </div>
-                }
               </div>
-            </div>
+            }
+          } @else {
+            @for (item of naoFuncionaram(); track item.experimento) {
+              <div class="aprendizado-card">
+                <div class="card-indicator danger"></div>
+                <div class="card-content">
+                  <div class="card-header">
+                    <div class="card-meta">
+                      <p-tag [value]="item.area" severity="secondary" />
+                      <span class="card-periodo">
+                        <i class="pi pi-calendar"></i> {{ item.periodo }}
+                      </span>
+                    </div>
+                    <div class="card-impact danger">
+                      <i class="pi pi-arrow-down-right"></i>
+                      {{ item.metrica }} {{ item.impacto }}
+                    </div>
+                  </div>
+                  <h3 class="card-titulo">{{ item.experimento }}</h3>
+                  <p class="card-insight">{{ item.insight }}</p>
+                  @if (item.aprendizado) {
+                    <div class="card-aprendizado">
+                      <i class="pi pi-lightbulb"></i>
+                      <span>{{ item.aprendizado }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
           }
         </div>
       </p-tabpanel>
 
       <!-- Tab 3: Insights por área -->
       <p-tabpanel value="2">
-        <div class="insights-grid">
-          @for (area of insightAreas; track area.tema) {
-            <div class="insight-area-card">
-              <div class="area-header">
-                <i class="pi {{ area.icon }} area-icon"></i>
-                <h3 class="area-tema">{{ area.tema }}</h3>
+        @if (loading()) {
+          <div class="insights-grid">
+            @for (_ of [1, 2, 3]; track $index) {
+              <div class="insight-skel-card">
+                <p-skeleton width="60%" height="20px" borderRadius="6px" />
+                <p-skeleton width="100%" height="52px" borderRadius="4px" />
+                <p-skeleton width="95%" height="14px" borderRadius="4px" />
+                <p-skeleton width="88%" height="14px" borderRadius="4px" />
+                <p-skeleton width="92%" height="14px" borderRadius="4px" />
+                <p-skeleton width="80%" height="14px" borderRadius="4px" />
               </div>
-              <p class="area-resumo">{{ area.resumo }}</p>
-              <ul class="area-pontos">
-                @for (ponto of area.pontos; track ponto) {
-                  <li>{{ ponto }}</li>
-                }
-              </ul>
-            </div>
-          }
-        </div>
+            }
+          </div>
+        } @else {
+          <div class="insights-grid">
+            @for (area of insightAreas(); track area.tema) {
+              <div class="insight-area-card">
+                <div class="area-header">
+                  <i class="pi {{ area.icon }} area-icon"></i>
+                  <h3 class="area-tema">{{ area.tema }}</h3>
+                </div>
+                <p class="area-resumo">{{ area.resumo }}</p>
+                <ul class="area-pontos">
+                  @for (ponto of area.pontos; track ponto) {
+                    <li>{{ ponto }}</li>
+                  }
+                </ul>
+              </div>
+            }
+          </div>
+        }
       </p-tabpanel>
 
     </p-tabpanels>

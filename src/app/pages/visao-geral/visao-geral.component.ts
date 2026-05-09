@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { ChartModule } from 'primeng/chart';
 import { TagModule } from 'primeng/tag';
 import { SkeletonModule } from 'primeng/skeleton';
+import { SelectModule } from 'primeng/select';
 import { ProductService } from '../../core/product.service';
 import { MetricService } from '../../core/metric.service';
 
@@ -54,13 +55,13 @@ type OpportunityMap = Record<string, Record<string, OpportunitySavedConfig>>;
 
 @Component({
   selector: 'app-visao-geral',
-  imports: [FormsModule, ChartModule, TagModule, SkeletonModule],
+  imports: [FormsModule, ChartModule, TagModule, SkeletonModule, SelectModule],
   templateUrl: './visao-geral.component.html',
   styleUrl: './visao-geral.component.scss',
 })
 export class VisaoGeralComponent {
-  private productService = inject(ProductService);
-  private metricService  = inject(MetricService);
+  protected productService = inject(ProductService);
+  protected metricService  = inject(MetricService);
 
   productName = computed(() => this.productService.selected().name);
   metricName  = computed(() => this.metricService.selected().name);
@@ -279,7 +280,7 @@ export class VisaoGeralComponent {
         experiments: [null,    null,    'Push Campaign A/B',  'Hero Image A/B'],
         gains:       [null,    null,    '+5K sessões',        '+4K sessões'],
         totalGain:   '+9K sessões acumuladas',
-        formatY:     v => `${Number(v)}K`,
+        formatY:     v => `${Number(v).toFixed(1).replace('.', ',')}K`,
       },
       '90d': {
         labels:      ['Mar', 'Abr',             'Mai'],
@@ -288,7 +289,7 @@ export class VisaoGeralComponent {
         experiments: [null,  'Onboarding Flow', 'Hero Image A/B'],
         gains:       [null,  '+6K sessões',     '+9K sessões'],
         totalGain:   '+15K sessões acumuladas',
-        formatY:     v => `${Number(v)}K`,
+        formatY:     v => `${Number(v).toFixed(1).replace('.', ',')}K`,
       },
       '180d': {
         labels:      ['Dez', 'Jan', 'Fev',           'Mar',               'Abr',             'Mai'],
@@ -297,7 +298,7 @@ export class VisaoGeralComponent {
         experiments: [null,  null,  'Copy Tone A/B', 'Push Notification', 'Onboarding Flow', 'Hero Image A/B'],
         gains:       [null,  null,  '+8K sessões',   '+6K sessões',       '+6K sessões',     '+9K sessões'],
         totalGain:   '+29K sessões acumuladas',
-        formatY:     v => `${Number(v)}K`,
+        formatY:     v => `${Number(v).toFixed(1).replace('.', ',')}K`,
       },
     },
     nps: {
@@ -308,7 +309,7 @@ export class VisaoGeralComponent {
         experiments: [null,    null,    null,     'Feedback Tone'],
         gains:       [null,    null,    null,     '+3 pontos'],
         totalGain:   '+3 pontos acumulados',
-        formatY:     v => `${Number(v)} pts`,
+        formatY:     v => `${Math.round(Number(v))} pts`,
       },
       '90d': {
         labels:      ['Mar', 'Abr',               'Mai'],
@@ -317,7 +318,7 @@ export class VisaoGeralComponent {
         experiments: [null,  'Rating Screen A/B', 'Feedback Tone'],
         gains:       [null,  '+3 pontos',         '+3 pontos'],
         totalGain:   '+6 pontos acumulados',
-        formatY:     v => `${Number(v)} pts`,
+        formatY:     v => `${Math.round(Number(v))} pts`,
       },
       '180d': {
         labels:      ['Dez', 'Jan', 'Fev',               'Mar',              'Abr',               'Mai'],
@@ -326,7 +327,7 @@ export class VisaoGeralComponent {
         experiments: [null,  null,  'Suporte Chat A/B',  'NPS Follow-up',    'Rating Screen A/B', 'Feedback Tone'],
         gains:       [null,  null,  '+3 pontos',         '+3 pontos',        '+3 pontos',         '+3 pontos'],
         totalGain:   '+12 pontos acumulados',
-        formatY:     v => `${Number(v)} pts`,
+        formatY:     v => `${Math.round(Number(v))} pts`,
       },
     },
     churn: {
@@ -606,7 +607,7 @@ export class VisaoGeralComponent {
     const opp   = this.opportunityMap[this.metricService.selected().id][this.selectedPeriodo()];
     const cfg   = this.impactMap[this.metricService.selected().id][this.selectedPeriodo()];
     const scale = this.impactScale();
-    const total = opp.values.reduce((acc, v) => acc + v * scale, 0);
+    const total = +opp.values.reduce((acc, v) => acc + v * scale, 0).toFixed(2);
     return `+${cfg.formatY(total)} protegidos`;
   });
 

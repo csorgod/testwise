@@ -27,6 +27,37 @@
   margin-top: 0.25rem;
 }
 
+.page-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.selectors-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.selector-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.selector-divider {
+  width: 1px;
+  height: 22px;
+  background: #e5e7eb;
+  margin: 0 0.15rem;
+  flex-shrink: 0;
+}
+
 .period-selector {
   display: flex;
   background: #fff;

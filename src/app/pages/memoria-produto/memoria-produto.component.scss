@@ -11,6 +11,35 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.header-title-group {
+  flex: 1;
+  min-width: 0;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.selectors-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.selector-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
 }
 
 .header-stats {
@@ -45,6 +74,52 @@
 
   &.success .stat-value { color: #059669; }
   &.danger  .stat-value { color: #ef4444; }
+}
+
+// ── Skeletons ─────────────────────────────────────────────
+.hipotese-card-skel {
+  background: #fff;
+  border: 1px solid #dbe8f2;
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-height: 200px;
+}
+
+.card-skel {
+  display: flex;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  overflow: hidden;
+  min-height: 90px;
+}
+
+.card-skel-body {
+  flex: 1;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.card-skel-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.insight-skel-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  min-height: 200px;
 }
 
 // ── AI Recommendations ────────────────────────────────────

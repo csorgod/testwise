@@ -1,13 +1,9 @@
 import { Component, inject, signal } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
-import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ButtonModule } from 'primeng/button';
-import { SelectModule } from 'primeng/select';
 import { TooltipModule } from 'primeng/tooltip';
 import { AvatarModule } from 'primeng/avatar';
-import { ProductService } from './core/product.service';
-import { MetricService } from './core/metric.service';
 
 interface NavItem {
   label: string;
@@ -34,15 +30,13 @@ const BRAIN_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" f
   selector: 'app-root',
   imports: [
     RouterOutlet, RouterLink, RouterLinkActive,
-    FormsModule, ButtonModule, SelectModule, TooltipModule, AvatarModule,
+    ButtonModule, TooltipModule, AvatarModule,
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
 export class App {
-  protected productService = inject(ProductService);
-  protected metricService  = inject(MetricService);
-  private sanitizer        = inject(DomSanitizer);
+  private sanitizer = inject(DomSanitizer);
 
   sidebarCollapsed = signal(false);
 

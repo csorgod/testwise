@@ -7,15 +7,37 @@
       <p class="page-subtitle">{{ productName() }} — resumo de experimentos e insights</p>
     </div>
 
-    <div class="period-selector">
-      @for (p of periodos; track p.value) {
-        <button
-          class="period-btn"
-          [class.active]="selectedPeriodo() === p.value"
-          (click)="selectedPeriodo.set(p.value)">
-          {{ p.label }}
-        </button>
-      }
+    <div class="page-controls">
+      <div class="selectors-row">
+        <span class="selector-label">Produto</span>
+        <p-select
+          [options]="productService.products"
+          [ngModel]="productService.selected()"
+          (ngModelChange)="productService.select($event)"
+          optionLabel="name"
+          [style]="{ minWidth: '160px' }"
+        />
+        <div class="selector-divider"></div>
+        <span class="selector-label">Métrica</span>
+        <p-select
+          [options]="metricService.metrics"
+          [ngModel]="metricService.selected()"
+          (ngModelChange)="metricService.select($event)"
+          optionLabel="name"
+          [style]="{ minWidth: '155px' }"
+        />
+      </div>
+
+      <div class="period-selector">
+        @for (p of periodos; track p.value) {
+          <button
+            class="period-btn"
+            [class.active]="selectedPeriodo() === p.value"
+            (click)="selectedPeriodo.set(p.value)">
+            {{ p.label }}
+          </button>
+        }
+      </div>
     </div>
   </div>
 
