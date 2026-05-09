@@ -1,0 +1,32 @@
+@import "primeicons/primeicons.css";
+
+// Itaú Unibanco brand tokens
+:root {
+  --itau-orange:      #FF6200;
+  --itau-orange-dark: #e55700;
+  --itau-blue:        #005183;
+  --itau-blue-dark:   #003d63;
+  --itau-yellow:      #FFF20A;
+  --itau-black:       #1A1A1A;
+  --itau-white:       #FFFFFF;
+  --itau-surface:     #F5F5F5;
+
+  --font-family: 'Open Sans', system-ui, -apple-system, sans-serif;
+
+  // Sobrescreve a variável de fonte do PrimeNG
+  --p-font-family: var(--font-family);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--itau-surface);
+  color: var(--itau-black);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

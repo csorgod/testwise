@@ -1,0 +1,89 @@
+<div class="app-shell">
+
+  <!-- ── Sidebar ─────────────────────────────────────────── -->
+  <aside class="sidebar" [class.collapsed]="sidebarCollapsed()">
+
+    <div class="sidebar-brand">
+      <div class="brand-icon"><i class="pi pi-chart-line"></i></div>
+      <span class="brand-text">TestWise</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      @for (item of navItems; track item.route) {
+        <a class="nav-item"
+           [routerLink]="item.route"
+           routerLinkActive="active"
+           [routerLinkActiveOptions]="{ exact: !!item.exact }"
+           [pTooltip]="sidebarCollapsed() ? item.label : ''"
+           tooltipPosition="right">
+          <i class="pi {{ item.icon }} nav-icon"></i>
+          <span class="nav-label">{{ item.label }}</span>
+        </a>
+      }
+    </nav>
+
+    <div class="sidebar-bottom">
+      @for (item of bottomNavItems; track item.route) {
+        <a class="nav-item"
+           [routerLink]="item.route"
+           routerLinkActive="active"
+           [pTooltip]="sidebarCollapsed() ? item.label : ''"
+           tooltipPosition="right">
+          <i class="pi {{ item.icon }} nav-icon"></i>
+          <span class="nav-label">{{ item.label }}</span>
+        </a>
+      }
+
+      <button class="collapse-btn"
+              (click)="toggleSidebar()"
+              [pTooltip]="sidebarCollapsed() ? 'Expandir menu' : ''"
+              tooltipPosition="right">
+        <i class="pi nav-icon"
+           [class.pi-chevron-left]="!sidebarCollapsed()"
+           [class.pi-chevron-right]="sidebarCollapsed()"></i>
+        <span class="nav-label">Recolher</span>
+      </button>
+    </div>
+
+  </aside>
+
+  <!-- ── Main area ────────────────────────────────────────── -->
+  <div class="main-area">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-selectors">
+        <span class="selector-label">Produto</span>
+        <p-select
+          [options]="productService.products"
+          [ngModel]="productService.selected()"
+          (ngModelChange)="productService.select($event)"
+          optionLabel="name"
+          [style]="{ minWidth: '200px' }"
+        />
+
+        <div class="selector-divider"></div>
+
+        <span class="selector-label">Métrica</span>
+        <p-select
+          [options]="metricService.metrics"
+          [ngModel]="metricService.selected()"
+          (ngModelChange)="metricService.select($event)"
+          optionLabel="name"
+          [style]="{ minWidth: '185px' }"
+        />
+      </div>
+
+      <div class="topbar-actions">
+        <p-button icon="pi pi-bell" [text]="true" severity="secondary" />
+        <p-avatar label="GS" shape="circle" />
+      </div>
+    </header>
+
+    <!-- Content -->
+    <main class="content-area">
+      <router-outlet />
+    </main>
+
+  </div>
+</div>

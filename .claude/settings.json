@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ng version *)",
+      "Bash(npm --version)",
+      "Bash(npm install *)",
+      "Bash(ls \"c:/Users/guilh/TestWise\")",
+      "Read(//c/Users/guilh/TestWise/**)",
+      "Bash(ng new *)",
+      "Bash(ng build *)",
+      "WebSearch",
+      "WebFetch(domain:www.pentagram.com)",
+      "WebFetch(domain:coloropedia.com)",
+      "WebFetch(domain:brandarchive.xyz)",
+      "WebFetch(domain:logotyp.us)",
+      "WebFetch(domain:abduzeedo.com)",
+      "WebFetch(domain:www.underconsideration.com)",
+      "WebFetch(domain:whatthelogo.com)",
+      "WebFetch(domain:brandfetch.com)",
+      "Bash(npx ng *)"
+    ]
+  }
+}

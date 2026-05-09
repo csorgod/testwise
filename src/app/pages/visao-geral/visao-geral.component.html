@@ -1,0 +1,100 @@
+<div class="visao-geral">
+
+  <!-- ── Page header ──────────────────────────────────────── -->
+  <div class="page-header">
+    <div class="page-title-group">
+      <h1 class="page-title">Visão Geral</h1>
+      <p class="page-subtitle">{{ productName() }} — resumo de experimentos e insights</p>
+    </div>
+
+    <div class="period-selector">
+      @for (p of periodos; track p.value) {
+        <button
+          class="period-btn"
+          [class.active]="selectedPeriodo() === p.value"
+          (click)="selectedPeriodo.set(p.value)">
+          {{ p.label }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- ── KPI cards ─────────────────────────────────────────── -->
+  <div class="kpi-grid">
+    @for (kpi of kpis(); track kpi.label) {
+      <div class="kpi-card" [attr.data-accent]="kpi.accent">
+        <div class="kpi-body">
+          <span class="kpi-label">{{ kpi.label }}</span>
+
+          @if (loading()) {
+            <p-skeleton height="2rem" borderRadius="6px" class="kpi-skel-value" />
+            <p-skeleton height="0.75rem" width="85%" borderRadius="4px" class="kpi-skel-trend" />
+          } @else {
+            <span class="kpi-value">{{ kpi.value }}</span>
+            <span class="kpi-trend" [class.positive]="kpi.positive" [class.negative]="!kpi.positive">
+              <i class="pi" [class.pi-arrow-up-right]="kpi.positive" [class.pi-arrow-down-right]="!kpi.positive"></i>
+              {{ kpi.trend }}
+            </span>
+          }
+        </div>
+        <div class="kpi-icon-wrap" [class.dimmed]="loading()">
+          <i class="pi {{ kpi.icon }}"></i>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- ── Escada de Impacto Acumulado ──────────────────────── -->
+  <div class="chart-card impact-chart-card">
+    <div class="chart-card-header">
+      <div class="chart-title-group">
+        <span class="chart-title">Escada de Impacto Acumulado</span>
+        <span class="chart-subtitle">
+          Evolução de <strong>{{ metricName() }}</strong> a cada teste vencedor
+        </span>
+      </div>
+      <span class="chart-badge">{{ impactTotalGain() }}</span>
+    </div>
+    <div class="impact-chart-body">
+      <p-chart type="line"
+               [data]="impactChartData()"
+               [options]="impactChartOptions()" />
+    </div>
+  </div>
+
+  <!-- ── Insights em destaque ──────────────────────────────── -->
+  <div class="insights-section">
+    <div class="section-header">
+      <h2 class="section-title">
+        <i class="pi pi-lightbulb"></i>
+        Insights em Destaque
+      </h2>
+      <span class="section-subtitle">Principais aprendizados do período</span>
+    </div>
+
+    <div class="insights-grid">
+      @for (insight of insights; track insight.title) {
+        <div class="insight-card">
+          <div class="insight-header">
+            <div class="insight-icon-wrap">
+              <i class="pi {{ insight.icon }}"></i>
+            </div>
+            <div class="insight-tags">
+              <p-tag [value]="insight.category" severity="secondary" />
+              <p-tag [value]="insight.impact" [severity]="impactSeverity(insight.impact)" />
+            </div>
+          </div>
+
+          <h3 class="insight-title">{{ insight.title }}</h3>
+          <p class="insight-desc">{{ insight.description }}</p>
+
+          <div class="insight-footer">
+            <i class="pi pi-flask"></i>
+            <span>{{ insight.experiment }}</span>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+</div>
