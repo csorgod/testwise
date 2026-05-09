@@ -42,8 +42,8 @@ interface ImpactConfig {
 }
 
 interface OpportunitySavedConfig {
-  labels: string[];
-  values: number[]; // negative → bars go downward
+  values:           number[]; // positive, one per time period — labels reused from impactMap
+  experimentCounts: number[]; // experiments run per period (not scaled — absolute count)
 }
 
 // [productId][metricId][periodoId]
@@ -470,65 +470,73 @@ export class VisaoGeralComponent {
   });
 
   // ── Custo da Oportunidade Salva (métrica × período) ────────
-  // Valores base na escala do produto mobile; impactScale() é aplicado nos computed.
+  // Valores positivos, um por período de tempo — mesmos labels do impactMap.
+  // Escala base = produto mobile; impactScale() é aplicado nos computed.
   private readonly opportunityMap: OpportunityMap = {
     faturamento: {
-      '30d':  { labels: ['CTA Agressivo',   'Desconto Flash',  'Grid Denso'],
-                values: [-0.2, -0.4, -0.15] },
-      '90d':  { labels: ['CTA Agressivo',   'Desconto Flash',  'Grid Denso',     'Banner Fixo',  'Preço Âncora'],
-                values: [-0.2, -0.4, -0.15, -0.3, -0.25] },
-      '180d': { labels: ['CTA Agressivo',   'Desconto Flash',  'Grid Denso',     'Banner Fixo',  'Preço Âncora',  'Dark Pattern', 'Cross-sell Pop.', 'Timer Urgência'],
-                values: [-0.2, -0.4, -0.15, -0.3, -0.25, -0.5, -0.2, -0.35] },
+      '30d':  { values: [0.15, 0.30, 0.40, 0.20], experimentCounts: [2, 3, 4, 3] },
+      '90d':  { values: [0.40, 0.50, 0.40],        experimentCounts: [4, 6, 5]    },
+      '180d': { values: [0.20, 0.30, 0.50, 0.40, 0.60, 0.35], experimentCounts: [2, 3, 4, 5, 6, 5] },
     },
     conversao: {
-      '30d':  { labels: ['CTA Deceptivo',   'Form Longo',      'Paywall Early'],
-                values: [-0.2, -0.4, -0.3] },
-      '90d':  { labels: ['CTA Deceptivo',   'Form Longo',      'Paywall Early',  'Friction Login', 'Confirm Screen'],
-                values: [-0.2, -0.4, -0.3, -0.25, -0.15] },
-      '180d': { labels: ['CTA Deceptivo',   'Form Longo',      'Paywall Early',  'Friction Login', 'Confirm Screen', 'Dark UX', 'Forced Signup', 'Skip Onboard'],
-                values: [-0.2, -0.4, -0.3, -0.25, -0.15, -0.4, -0.25, -0.2] },
+      '30d':  { values: [0.10, 0.30, 0.35, 0.15], experimentCounts: [2, 2, 3, 2] },
+      '90d':  { values: [0.30, 0.45, 0.55],        experimentCounts: [3, 4, 4]    },
+      '180d': { values: [0.15, 0.25, 0.40, 0.35, 0.55, 0.45], experimentCounts: [1, 2, 3, 4, 4, 3] },
     },
     sessoes: {
-      '30d':  { labels: ['Banner Intrusivo', 'Pop-up Bloqueante', 'Autoplay Vídeo'],
-                values: [-3, -6, -4] },
-      '90d':  { labels: ['Banner Intrusivo', 'Pop-up Bloqueante', 'Autoplay Vídeo', 'Redirect Forçado', 'Conteúdo Oculto'],
-                values: [-3, -6, -4, -5, -4] },
-      '180d': { labels: ['Banner Intrusivo', 'Pop-up Bloqueante', 'Autoplay Vídeo', 'Redirect Forçado', 'Conteúdo Oculto', 'UX Complexo', 'Nav. Oculta', 'Cadastro Obr.'],
-                values: [-3, -6, -4, -5, -4, -7, -3, -4] },
+      '30d':  { values: [2, 5, 4, 2], experimentCounts: [1, 2, 2, 2] },
+      '90d':  { values: [6, 8, 8],    experimentCounts: [2, 3, 3]    },
+      '180d': { values: [3, 4, 6, 7, 8, 8], experimentCounts: [1, 1, 2, 2, 3, 3] },
     },
     nps: {
-      '30d':  { labels: ['Survey Obrigatório', 'Chat Forçado'],
-                values: [-2, -4] },
-      '90d':  { labels: ['Survey Obrigatório', 'Chat Forçado', 'Rating Bloqueante', 'Opt-out Oculto'],
-                values: [-2, -4, -3, -2] },
-      '180d': { labels: ['Survey Obrigatório', 'Chat Forçado', 'Rating Bloqueante', 'Opt-out Oculto', 'Notif. Excessiva', 'Suporte Lento'],
-                values: [-2, -4, -3, -2, -5, -3] },
+      '30d':  { values: [1, 2, 2, 1], experimentCounts: [1, 1, 2, 1] },
+      '90d':  { values: [3, 4, 4],    experimentCounts: [1, 2, 2]    },
+      '180d': { values: [2, 2, 3, 3, 5, 4], experimentCounts: [1, 1, 1, 2, 2, 2] },
     },
     churn: {
-      '30d':  { labels: ['Cancel. Difícil',  'E-mail Spam',    'Taxa Surpresa'],
-                values: [-0.2, -0.3, -0.15] },
-      '90d':  { labels: ['Cancel. Difícil',  'E-mail Spam',    'Taxa Surpresa',  'Dark Save',    'Preço Oculto'],
-                values: [-0.2, -0.3, -0.15, -0.3, -0.2] },
-      '180d': { labels: ['Cancel. Difícil',  'E-mail Spam',    'Taxa Surpresa',  'Dark Save',    'Preço Oculto', 'Lock-in Forçado', 'Downgrade Forç.', 'Desc. Falso'],
-                values: [-0.2, -0.3, -0.15, -0.3, -0.2, -0.4, -0.2, -0.15] },
+      '30d':  { values: [0.10, 0.20, 0.20, 0.15], experimentCounts: [1, 1, 2, 1] },
+      '90d':  { values: [0.35, 0.40, 0.40],        experimentCounts: [1, 2, 2]    },
+      '180d': { values: [0.15, 0.20, 0.30, 0.35, 0.45, 0.45], experimentCounts: [1, 1, 2, 2, 3, 2] },
     },
   };
 
   opportunityChartData = computed(() => {
     const opp    = this.opportunityMap[this.metricService.selected().id][this.selectedPeriodo()];
+    const cfg    = this.impactMap[this.metricService.selected().id][this.selectedPeriodo()];
     const scale  = this.impactScale();
     const values = opp.values.map(v => +(v * scale).toFixed(1));
     return {
-      labels: opp.labels,
-      datasets: [{
-        label: 'Impacto negativo evitado',
-        data: values,
-        backgroundColor: 'rgba(0, 81, 131, 0.70)',
-        borderColor: '#005183',
-        borderWidth: 1.5,
-        borderRadius: 4,
-        borderSkipped: 'top' as const,
-      }],
+      labels: cfg.labels,
+      datasets: [
+        {
+          type: 'bar' as const,
+          label: 'Impacto evitado',
+          data: values,
+          backgroundColor: 'rgba(0, 81, 131, 0.70)',
+          borderColor: '#005183',
+          borderWidth: 1.5,
+          borderRadius: 4,
+          borderSkipped: 'bottom' as const,
+          yAxisID: 'y',
+          order: 2,
+        },
+        {
+          type: 'line' as const,
+          label: 'Experimentos executados',
+          data: opp.experimentCounts,
+          borderColor: '#FF6200',
+          borderWidth: 2,
+          pointRadius: 5,
+          pointBackgroundColor: '#FF6200',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2,
+          pointHoverRadius: 7,
+          tension: 0.3,
+          fill: false,
+          yAxisID: 'y1',
+          order: 1,
+        },
+      ],
     };
   });
 
@@ -537,8 +545,9 @@ export class VisaoGeralComponent {
     const cfg    = this.impactMap[this.metricService.selected().id][this.selectedPeriodo()];
     const scale  = this.impactScale();
     const values = opp.values.map(v => +(v * scale).toFixed(1));
-    const minVal = Math.min(...values);
-    const pad    = Math.abs(minVal) * 0.25;
+    const maxVal = Math.max(...values);
+    const pad    = maxVal * 0.25;
+    const maxCount = Math.max(...opp.experimentCounts);
     return {
       responsive: true,
       maintainAspectRatio: false,
@@ -550,32 +559,44 @@ export class VisaoGeralComponent {
         },
         tooltip: {
           callbacks: {
-            title: (items: any[]) => opp.labels[items[0].dataIndex],
-            label: (item: any)    => `Impacto evitado: ${cfg.formatY(Math.abs(item.raw as number))}`,
+            label: (item: any) => {
+              if (item.datasetIndex === 0)
+                return `Impacto evitado: ${cfg.formatY(item.raw as number)}`;
+              return `Experimentos: ${item.raw}`;
+            },
           },
           padding: 12,
         },
       },
       scales: {
         y: {
-          max: 0,
-          min: minVal - pad,
+          min: 0,
+          max: maxVal + pad,
           grid: { color: '#f3f4f6' },
           ticks: {
             font: { family: "'Open Sans', sans-serif", size: 11 },
-            callback: (v: number) => cfg.formatY(Math.abs(v)),
+            callback: (v: number) => cfg.formatY(v),
+          },
+        },
+        y1: {
+          position: 'right' as const,
+          min: 0,
+          max: maxCount + 2,
+          grid: { drawOnChartArea: false },
+          ticks: {
+            stepSize: 1,
+            font: { family: "'Open Sans', sans-serif", size: 11 },
+          },
+          title: {
+            display: true,
+            text: 'experimentos',
+            font: { family: "'Open Sans', sans-serif", size: 10 },
+            color: '#9ca3af',
           },
         },
         x: {
           grid: { display: false },
-          ticks: {
-            font: { family: "'Open Sans', sans-serif", size: 11 },
-            maxRotation: 30,
-            callback: (_: any, i: number) => {
-              const lbl = opp.labels[i];
-              return lbl.length > 15 ? lbl.slice(0, 13) + '…' : lbl;
-            },
-          },
+          ticks: { font: { family: "'Open Sans', sans-serif", size: 12 } },
         },
       },
     };
@@ -585,7 +606,7 @@ export class VisaoGeralComponent {
     const opp   = this.opportunityMap[this.metricService.selected().id][this.selectedPeriodo()];
     const cfg   = this.impactMap[this.metricService.selected().id][this.selectedPeriodo()];
     const scale = this.impactScale();
-    const total = Math.abs(opp.values.reduce((acc, v) => acc + v * scale, 0));
+    const total = opp.values.reduce((acc, v) => acc + v * scale, 0);
     return `+${cfg.formatY(total)} protegidos`;
   });
 
