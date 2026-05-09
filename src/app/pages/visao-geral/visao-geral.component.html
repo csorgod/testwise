@@ -56,9 +56,35 @@
       <span class="chart-badge">{{ impactTotalGain() }}</span>
     </div>
     <div class="impact-chart-body">
-      <p-chart type="line"
-               [data]="impactChartData()"
-               [options]="impactChartOptions()" />
+      @if (loading()) {
+        <p-skeleton height="100%" borderRadius="8px" />
+      } @else {
+        <p-chart type="line"
+                 [data]="impactChartData()"
+                 [options]="impactChartOptions()" />
+      }
+    </div>
+  </div>
+
+  <!-- ── Custo da Oportunidade Salva ─────────────────────── -->
+  <div class="chart-card opportunity-chart-card">
+    <div class="chart-card-header">
+      <div class="chart-title-group">
+        <span class="chart-title">Custo da Oportunidade Salva</span>
+        <span class="chart-subtitle">
+          Quanto de <strong>{{ metricName() }}</strong> foi protegido ao descartar variações perdedoras
+        </span>
+      </div>
+      <span class="chart-badge opportunity-badge">{{ opportunityTotalSaved() }}</span>
+    </div>
+    <div class="opportunity-chart-body">
+      @if (loading()) {
+        <p-skeleton height="100%" borderRadius="8px" />
+      } @else {
+        <p-chart type="bar"
+                 [data]="opportunityChartData()"
+                 [options]="opportunityChartOptions()" />
+      }
     </div>
   </div>
 

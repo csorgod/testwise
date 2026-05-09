@@ -41,10 +41,16 @@ interface ImpactConfig {
   formatY:     (v: number) => string;
 }
 
+interface OpportunitySavedConfig {
+  labels: string[];
+  values: number[]; // negative → bars go downward
+}
+
 // [productId][metricId][periodoId]
-type DataMap = Record<string, Record<string, Record<string, MetricKpiData>>>;
+type DataMap        = Record<string, Record<string, Record<string, MetricKpiData>>>;
 // [metricId][periodoId]
-type ImpactMap = Record<string, Record<string, ImpactConfig>>;
+type ImpactMap      = Record<string, Record<string, ImpactConfig>>;
+type OpportunityMap = Record<string, Record<string, OpportunitySavedConfig>>;
 
 @Component({
   selector: 'app-visao-geral',
@@ -461,6 +467,126 @@ export class VisaoGeralComponent {
     const gain     = lastVal - baseline;
     const sign     = gain >= 0 ? '+' : '';
     return `${sign}${cfg.formatY(gain)} acumulados`;
+  });
+
+  // ── Custo da Oportunidade Salva (métrica × período) ────────
+  // Valores base na escala do produto mobile; impactScale() é aplicado nos computed.
+  private readonly opportunityMap: OpportunityMap = {
+    faturamento: {
+      '30d':  { labels: ['CTA Agressivo',   'Desconto Flash',  'Grid Denso'],
+                values: [-0.2, -0.4, -0.15] },
+      '90d':  { labels: ['CTA Agressivo',   'Desconto Flash',  'Grid Denso',     'Banner Fixo',  'Preço Âncora'],
+                values: [-0.2, -0.4, -0.15, -0.3, -0.25] },
+      '180d': { labels: ['CTA Agressivo',   'Desconto Flash',  'Grid Denso',     'Banner Fixo',  'Preço Âncora',  'Dark Pattern', 'Cross-sell Pop.', 'Timer Urgência'],
+                values: [-0.2, -0.4, -0.15, -0.3, -0.25, -0.5, -0.2, -0.35] },
+    },
+    conversao: {
+      '30d':  { labels: ['CTA Deceptivo',   'Form Longo',      'Paywall Early'],
+                values: [-0.2, -0.4, -0.3] },
+      '90d':  { labels: ['CTA Deceptivo',   'Form Longo',      'Paywall Early',  'Friction Login', 'Confirm Screen'],
+                values: [-0.2, -0.4, -0.3, -0.25, -0.15] },
+      '180d': { labels: ['CTA Deceptivo',   'Form Longo',      'Paywall Early',  'Friction Login', 'Confirm Screen', 'Dark UX', 'Forced Signup', 'Skip Onboard'],
+                values: [-0.2, -0.4, -0.3, -0.25, -0.15, -0.4, -0.25, -0.2] },
+    },
+    sessoes: {
+      '30d':  { labels: ['Banner Intrusivo', 'Pop-up Bloqueante', 'Autoplay Vídeo'],
+                values: [-3, -6, -4] },
+      '90d':  { labels: ['Banner Intrusivo', 'Pop-up Bloqueante', 'Autoplay Vídeo', 'Redirect Forçado', 'Conteúdo Oculto'],
+                values: [-3, -6, -4, -5, -4] },
+      '180d': { labels: ['Banner Intrusivo', 'Pop-up Bloqueante', 'Autoplay Vídeo', 'Redirect Forçado', 'Conteúdo Oculto', 'UX Complexo', 'Nav. Oculta', 'Cadastro Obr.'],
+                values: [-3, -6, -4, -5, -4, -7, -3, -4] },
+    },
+    nps: {
+      '30d':  { labels: ['Survey Obrigatório', 'Chat Forçado'],
+                values: [-2, -4] },
+      '90d':  { labels: ['Survey Obrigatório', 'Chat Forçado', 'Rating Bloqueante', 'Opt-out Oculto'],
+                values: [-2, -4, -3, -2] },
+      '180d': { labels: ['Survey Obrigatório', 'Chat Forçado', 'Rating Bloqueante', 'Opt-out Oculto', 'Notif. Excessiva', 'Suporte Lento'],
+                values: [-2, -4, -3, -2, -5, -3] },
+    },
+    churn: {
+      '30d':  { labels: ['Cancel. Difícil',  'E-mail Spam',    'Taxa Surpresa'],
+                values: [-0.2, -0.3, -0.15] },
+      '90d':  { labels: ['Cancel. Difícil',  'E-mail Spam',    'Taxa Surpresa',  'Dark Save',    'Preço Oculto'],
+                values: [-0.2, -0.3, -0.15, -0.3, -0.2] },
+      '180d': { labels: ['Cancel. Difícil',  'E-mail Spam',    'Taxa Surpresa',  'Dark Save',    'Preço Oculto', 'Lock-in Forçado', 'Downgrade Forç.', 'Desc. Falso'],
+                values: [-0.2, -0.3, -0.15, -0.3, -0.2, -0.4, -0.2, -0.15] },
+    },
+  };
+
+  opportunityChartData = computed(() => {
+    const opp    = this.opportunityMap[this.metricService.selected().id][this.selectedPeriodo()];
+    const scale  = this.impactScale();
+    const values = opp.values.map(v => +(v * scale).toFixed(1));
+    return {
+      labels: opp.labels,
+      datasets: [{
+        label: 'Impacto negativo evitado',
+        data: values,
+        backgroundColor: 'rgba(0, 81, 131, 0.70)',
+        borderColor: '#005183',
+        borderWidth: 1.5,
+        borderRadius: 4,
+        borderSkipped: 'top' as const,
+      }],
+    };
+  });
+
+  opportunityChartOptions = computed(() => {
+    const opp    = this.opportunityMap[this.metricService.selected().id][this.selectedPeriodo()];
+    const cfg    = this.impactMap[this.metricService.selected().id][this.selectedPeriodo()];
+    const scale  = this.impactScale();
+    const values = opp.values.map(v => +(v * scale).toFixed(1));
+    const minVal = Math.min(...values);
+    const pad    = Math.abs(minVal) * 0.25;
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index' as const, intersect: false },
+      plugins: {
+        legend: {
+          position: 'bottom' as const,
+          labels: { padding: 16, font: { family: "'Open Sans', sans-serif", size: 12 } },
+        },
+        tooltip: {
+          callbacks: {
+            title: (items: any[]) => opp.labels[items[0].dataIndex],
+            label: (item: any)    => `Impacto evitado: ${cfg.formatY(Math.abs(item.raw as number))}`,
+          },
+          padding: 12,
+        },
+      },
+      scales: {
+        y: {
+          max: 0,
+          min: minVal - pad,
+          grid: { color: '#f3f4f6' },
+          ticks: {
+            font: { family: "'Open Sans', sans-serif", size: 11 },
+            callback: (v: number) => cfg.formatY(Math.abs(v)),
+          },
+        },
+        x: {
+          grid: { display: false },
+          ticks: {
+            font: { family: "'Open Sans', sans-serif", size: 11 },
+            maxRotation: 30,
+            callback: (_: any, i: number) => {
+              const lbl = opp.labels[i];
+              return lbl.length > 15 ? lbl.slice(0, 13) + '…' : lbl;
+            },
+          },
+        },
+      },
+    };
+  });
+
+  opportunityTotalSaved = computed(() => {
+    const opp   = this.opportunityMap[this.metricService.selected().id][this.selectedPeriodo()];
+    const cfg   = this.impactMap[this.metricService.selected().id][this.selectedPeriodo()];
+    const scale = this.impactScale();
+    const total = Math.abs(opp.values.reduce((acc, v) => acc + v * scale, 0));
+    return `+${cfg.formatY(total)} protegidos`;
   });
 
   // ── Insights ──────────────────────────────────────────────

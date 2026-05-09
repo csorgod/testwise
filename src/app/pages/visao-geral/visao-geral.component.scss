@@ -201,6 +201,18 @@
   position: relative;
 }
 
+// ── Opportunity chart ─────────────────────────────────────
+.opportunity-chart-body {
+  height: 195px;
+  position: relative;
+}
+
+.opportunity-badge {
+  color: var(--itau-blue);
+  background: #e8f2f9;
+  border-color: #c0d9eb;
+}
+
 // ── Insights section ──────────────────────────────────────
 .insights-section {
   display: flex;
