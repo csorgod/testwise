@@ -354,14 +354,29 @@ export class VisaoGeralComponent {
     },
   };
 
+  // Escala por produto × métrica: ajusta baseline e valores sem duplicar 60 datasets
+  private readonly productMetricScales: Record<string, Record<string, number>> = {
+    mobile: { faturamento: 1.00, conversao: 1.00, sessoes: 1.00, nps: 1.00, churn: 1.00 },
+    ib:     { faturamento: 0.76, conversao: 1.18, sessoes: 0.62, nps: 0.92, churn: 0.86 },
+    pj:     { faturamento: 1.38, conversao: 0.74, sessoes: 0.36, nps: 0.83, churn: 0.68 },
+    cards:  { faturamento: 0.88, conversao: 0.94, sessoes: 0.80, nps: 0.97, churn: 1.14 },
+  };
+
+  private readonly impactScale = computed(() =>
+    this.productMetricScales[this.productService.selected().id][this.metricService.selected().id]
+  );
+
   impactChartData = computed(() => {
-    const cfg = this.impactMap[this.metricService.selected().id][this.selectedPeriodo()];
+    const cfg      = this.impactMap[this.metricService.selected().id][this.selectedPeriodo()];
+    const scale    = this.impactScale();
+    const baseline = +(cfg.baseline * scale).toFixed(1);
+    const values   = cfg.values.map(v => +(v * scale).toFixed(1));
     return {
       labels: cfg.labels,
       datasets: [
         {
           label: 'Baseline inicial',
-          data: cfg.labels.map(() => cfg.baseline),
+          data: cfg.labels.map(() => baseline),
           borderColor: '#d1d5db',
           borderDash: [6, 4],
           borderWidth: 1.5,
@@ -373,7 +388,7 @@ export class VisaoGeralComponent {
         },
         {
           label: this.metricName(),
-          data: cfg.values,
+          data: values,
           stepped: 'before',
           fill: true,
           backgroundColor: 'rgba(255, 98, 0, 0.1)',
@@ -392,10 +407,13 @@ export class VisaoGeralComponent {
   });
 
   impactChartOptions = computed(() => {
-    const cfg = this.impactMap[this.metricService.selected().id][this.selectedPeriodo()];
-    const allVals = [cfg.baseline, ...cfg.values];
-    const span = Math.max(...allVals) - Math.min(...allVals);
-    const pad  = span > 0 ? span * 0.3 : Math.abs(cfg.baseline) * 0.05;
+    const cfg      = this.impactMap[this.metricService.selected().id][this.selectedPeriodo()];
+    const scale    = this.impactScale();
+    const baseline = +(cfg.baseline * scale).toFixed(1);
+    const values   = cfg.values.map(v => +(v * scale).toFixed(1));
+    const allVals  = [baseline, ...values];
+    const span     = Math.max(...allVals) - Math.min(...allVals);
+    const pad      = span > 0 ? span * 0.3 : Math.abs(baseline) * 0.05;
     return {
       responsive: true,
       maintainAspectRatio: false,
@@ -435,9 +453,15 @@ export class VisaoGeralComponent {
     };
   });
 
-  impactTotalGain = computed(() =>
-    this.impactMap[this.metricService.selected().id][this.selectedPeriodo()].totalGain
-  );
+  impactTotalGain = computed(() => {
+    const cfg      = this.impactMap[this.metricService.selected().id][this.selectedPeriodo()];
+    const scale    = this.impactScale();
+    const baseline = cfg.baseline * scale;
+    const lastVal  = cfg.values[cfg.values.length - 1] * scale;
+    const gain     = lastVal - baseline;
+    const sign     = gain >= 0 ? '+' : '';
+    return `${sign}${cfg.formatY(gain)} acumulados`;
+  });
 
   // ── Insights ──────────────────────────────────────────────
   insights: Insight[] = [
