@@ -416,18 +416,80 @@
 
   <ng-template pTemplate="footer">
     <div class="modal-footer-actions">
-      <p-button icon="pi pi-bookmark" [outlined]="true" severity="secondary" />
-      <p-button icon="pi pi-share-alt" [outlined]="true" severity="secondary" />
-      <p-button icon="pi pi-download" [outlined]="true" severity="secondary" />
       <p-button
         label="Adicionar métrica"
         icon="pi pi-chart-line"
         [outlined]="true"
         (click)="metricPopover.toggle($event)"
       />
+      <p-splitbutton
+        label="Adicionar contexto"
+        icon="pi pi-file-edit"
+        [model]="contextMenuItems"
+        [outlined]="true"
+        (onClick)="openFilePicker()"
+      />
+      <input #fileInput type="file" style="display:none" (change)="onFileSelected($event)" />
+      <p-button
+        label="Conversar com IA"
+        icon="pi pi-sparkles"
+        [outlined]="true"
+        severity="info"
+        (click)="openChat()"
+      />
     </div>
   </ng-template>
 
+</p-dialog>
+
+<!-- ── Chat IA dialog ─────────────────────────────────────── -->
+<p-dialog
+  header="Chat com IA"
+  [visible]="chatVisible()"
+  (visibleChange)="chatVisible.set($event)"
+  [modal]="false"
+  [draggable]="true"
+  [resizable]="false"
+  [style]="{ width: '440px', maxWidth: '95vw', height: '540px' }"
+  styleClass="chat-dialog">
+
+  <div class="chat-messages" #chatMessagesEl>
+    @for (msg of chatMessages(); track $index) {
+      <div class="chat-message" [class.user]="msg.role === 'user'" [class.ai]="msg.role === 'ai'">
+        @if (msg.role === 'ai') {
+          <div class="chat-avatar"><i class="pi pi-sparkles"></i></div>
+        }
+        <div class="chat-bubble">{{ msg.text }}</div>
+      </div>
+    }
+    @if (chatLoading()) {
+      <div class="chat-message ai">
+        <div class="chat-avatar"><i class="pi pi-sparkles"></i></div>
+        <div class="chat-bubble typing">
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </div>
+      </div>
+    }
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="chat-input-row">
+      <input
+        pInputText
+        [(ngModel)]="chatInput"
+        placeholder="Faça uma pergunta..."
+        (keydown.enter)="sendChatMessage()"
+        class="chat-input"
+      />
+      <p-button
+        icon="pi pi-send"
+        [disabled]="!chatInput.trim() || chatLoading()"
+        (click)="sendChatMessage()"
+      />
+    </div>
+  </ng-template>
 </p-dialog>
 
 <p-popover #metricPopover>

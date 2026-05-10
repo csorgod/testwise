@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal, ViewChild, ElementRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Tabs, TabList, Tab, TabPanels, TabPanel } from 'primeng/tabs';
 import { Tag } from 'primeng/tag';
@@ -9,6 +9,9 @@ import { Dialog } from 'primeng/dialog';
 import { CarouselModule } from 'primeng/carousel';
 import { Popover } from 'primeng/popover';
 import { TooltipModule } from 'primeng/tooltip';
+import { InputTextModule } from 'primeng/inputtext';
+import { SplitButtonModule } from 'primeng/splitbutton';
+import { MenuItem } from 'primeng/api';
 import { ProductService } from '../../core/product.service';
 import { MetricService, Metric } from '../../core/metric.service';
 
@@ -42,6 +45,11 @@ interface Aprendizado {
   alternativas: { texto: string; potencial: 'Alto' | 'Médio' }[];
 }
 
+interface ChatMessage {
+  role: 'user' | 'ai';
+  text: string;
+}
+
 interface InsightArea {
   tema: string;
   icon: string;
@@ -59,7 +67,7 @@ interface ProductMemoria {
 
 @Component({
   selector: 'app-memoria-produto',
-  imports: [FormsModule, Tabs, TabList, Tab, TabPanels, TabPanel, Tag, ButtonModule, SelectModule, SkeletonModule, Dialog, CarouselModule, Popover, TooltipModule],
+  imports: [FormsModule, Tabs, TabList, Tab, TabPanels, TabPanel, Tag, ButtonModule, SelectModule, SkeletonModule, Dialog, CarouselModule, Popover, TooltipModule, InputTextModule, SplitButtonModule],
   templateUrl: './memoria-produto.component.html',
   styleUrl: './memoria-produto.component.scss',
 })
@@ -71,6 +79,14 @@ export class MemoriaProdutoComponent {
   selectedLearning = signal<Aprendizado | null>(null);
   modalVisible = signal(false);
   addedMetrics = signal<Metric[]>([]);
+
+  chatVisible  = signal(false);
+  chatMessages = signal<ChatMessage[]>([]);
+  chatLoading  = signal(false);
+  chatInput    = '';
+
+  @ViewChild('chatMessagesEl') private chatMessagesEl!: ElementRef<HTMLDivElement>;
+  @ViewChild('fileInput')     private fileInput!:       ElementRef<HTMLInputElement>;
 
   private loadingTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -108,6 +124,68 @@ export class MemoriaProdutoComponent {
 
   isPositiveResult(resultado: string): boolean {
     return resultado.trimStart().startsWith('+');
+  }
+
+  readonly contextMenuItems: MenuItem[] = [
+    { label: '.pdf',  icon: 'pi pi-file-pdf',  command: () => this.openFilePicker('.pdf') },
+    { label: '.docx', icon: 'pi pi-file-word', command: () => this.openFilePicker('.docx,.doc') },
+    { label: '.md',   icon: 'pi pi-code',      command: () => this.openFilePicker('.md,.markdown') },
+    { label: 'Link',  icon: 'pi pi-link',      command: () => this.addLink() },
+  ];
+
+  openFilePicker(accept = '.pdf,.docx,.doc,.md,.markdown'): void {
+    const el = this.fileInput.nativeElement;
+    el.accept = accept;
+    el.value  = '';
+    el.click();
+  }
+
+  onFileSelected(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (file) console.log('Arquivo selecionado:', file.name);
+  }
+
+  addLink(): void {
+    const url = window.prompt('Cole o link do documento:');
+    if (url) console.log('Link adicionado:', url);
+  }
+
+  private readonly aiResponses = [
+    'Com base nos experimentos analisados, o padrão de comportamento do usuário é consistente e replicável. As métricas indicam que a hipótese testada tem suporte direto nos dados — especialmente nos pontos de maior impacto no funil.',
+    'Essa é uma perspectiva relevante. Os dados mostram que intervenções que reduzem fricção no momento certo tendem a gerar impacto desproporcional. A combinação de timing e contexto foi determinante nos resultados observados.',
+    'Os experimentos confirmam que o comportamento do usuário neste cenário é mais sensível ao contexto de uso do que à funcionalidade em si. Vale explorar variações que preservem o aprendizado central enquanto testam novas hipóteses adjacentes.',
+  ];
+
+  openChat(): void {
+    const item = this.selectedLearning();
+    if (!item) return;
+    this.chatMessages.set([{
+      role: 'ai',
+      text: `Pronto(a) para se aprofudar no experimento "${item.experimento}"?`,
+    }]);
+    this.chatInput = '';
+    this.chatVisible.set(true);
+  }
+
+  sendChatMessage(): void {
+    const text = this.chatInput.trim();
+    if (!text || this.chatLoading()) return;
+    this.chatInput = '';
+    this.chatMessages.update(msgs => [...msgs, { role: 'user', text }]);
+    this.chatLoading.set(true);
+    setTimeout(() => this.scrollChatToBottom(), 50);
+    setTimeout(() => {
+      const aiIdx = this.chatMessages().filter(m => m.role === 'ai').length % this.aiResponses.length;
+      this.chatMessages.update(msgs => [...msgs, { role: 'ai', text: this.aiResponses[aiIdx] }]);
+      this.chatLoading.set(false);
+      setTimeout(() => this.scrollChatToBottom(), 50);
+    }, 1300);
+  }
+
+  private scrollChatToBottom(): void {
+    if (this.chatMessagesEl?.nativeElement) {
+      this.chatMessagesEl.nativeElement.scrollTop = this.chatMessagesEl.nativeElement.scrollHeight;
+    }
   }
 
   private readonly productData: Record<string, ProductMemoria> = {
