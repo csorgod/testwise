@@ -6,6 +6,7 @@ import { ButtonModule } from 'primeng/button';
 import { SelectModule } from 'primeng/select';
 import { SkeletonModule } from 'primeng/skeleton';
 import { Dialog } from 'primeng/dialog';
+import { CarouselModule } from 'primeng/carousel';
 import { ProductService } from '../../core/product.service';
 
 interface Hipotese {
@@ -34,6 +35,7 @@ interface Aprendizado {
   insight: string;
   aprendizado?: string;
   experimentos: ExperimentoRef[];
+  resumoIA?: string;
   alternativas: string[];
 }
 
@@ -54,7 +56,7 @@ interface ProductMemoria {
 
 @Component({
   selector: 'app-memoria-produto',
-  imports: [FormsModule, Tabs, TabList, Tab, TabPanels, TabPanel, Tag, ButtonModule, SelectModule, SkeletonModule, Dialog],
+  imports: [FormsModule, Tabs, TabList, Tab, TabPanels, TabPanel, Tag, ButtonModule, SelectModule, SkeletonModule, Dialog, CarouselModule],
   templateUrl: './memoria-produto.component.html',
   styleUrl: './memoria-produto.component.scss',
 })
@@ -109,6 +111,7 @@ export class MemoriaProdutoComponent {
             'Avaliar confirmação por PIN curto (4 dígitos) como substituto à biometria',
             'Medir impacto de limiar de simplificação por perfil de risco do usuário',
           ],
+          resumoIA: 'Os três experimentos conduzidos entre maio e setembro de 2024 testaram, de forma incremental, o impacto de remover fricção em pontos específicos do fluxo de confirmação PIX. O que ficou evidente é que o usuário não percebe simplificação como perda de segurança — pelo contrário, a velocidade passou a ser o principal indicador de confiança no processo. A conclusão mais relevante é que o fluxo ideal para transações de baixo risco é fundamentalmente diferente do que a equipe assumia: menos etapas, confirmação mais rápida e ausência de revisões redundantes não apenas melhoraram a conversão, mas aumentaram a percepção positiva da experiência.',
         },
         {
           experimento: 'CTA de investimento com destaque laranja na home',
@@ -123,6 +126,7 @@ export class MemoriaProdutoComponent {
             'Avaliar personalização do CTA por perfil de investidor',
             'Medir impacto de animação sutil em dias de alta rentabilidade',
           ],
+          resumoIA: 'Os experimentos de agosto e setembro de 2024 confirmaram que a cor da marca, quando aplicada estrategicamente em calls-to-action de produtos prioritários, gera ganho de clique sem comprometer a harmonia visual da interface. O maior aprendizado não está no resultado em si, mas na combinação de dois fatores: o destaque da cor e o posicionamento no topo da home amplificam-se mutuamente. Separar esses efeitos nos experimentos foi o que permitiu entender o que de fato influencia o comportamento do usuário, e não apenas o que o impacta de forma superficial.',
         },
         {
           experimento: 'Onboarding guiado para novos usuários com PIX',
@@ -137,6 +141,7 @@ export class MemoriaProdutoComponent {
             'Testar onboarding progressivo — revelado conforme o uso avança',
             'Avaliar impacto de onboarding em outros fluxos críticos (TED, investimentos)',
           ],
+          resumoIA: 'O tutorial interativo de três passos surgiu como resposta a uma taxa de ativação historicamente abaixo do esperado para novos usuários do PIX. Os resultados confirmaram que o formato step-by-step contextual, muito mais do que um vídeo explicativo, reduz a ansiedade do primeiro uso ao manter o usuário no controle do ritmo de aprendizado. O dado mais relevante veio da segmentação etária: o ganho de 31% na ativação foi desproporcionalmente concentrado em usuários acima de 45 anos, o que abre uma linha de investigação importante sobre como onboardings diferentes podem precisar atender perfis distintos de forma mais explícita.',
         },
         {
           experimento: 'Widget de saldo mascarado acessível na tela inicial',
@@ -151,6 +156,7 @@ export class MemoriaProdutoComponent {
             'Avaliar widget de saldo por conta específica na home',
             'Medir impacto do saldo mascarado em usuários com perfil de segurança elevado',
           ],
+          resumoIA: 'A hipótese por trás dos dois experimentos era simples: usuários querem acesso rápido ao saldo, mas sem expô-lo em contextos públicos. O que os dados mostraram vai além disso — privacidade como escolha do usuário, e não como restrição do sistema, é percebida positivamente e aumenta a frequência de abertura do app. O opt-in de 67% é o indicador mais eloquente: quando o usuário escolhe o comportamento, ele se engaja mais do que quando o sistema decide por ele.',
         },
       ],
       naoFuncionaram: [
@@ -168,6 +174,7 @@ export class MemoriaProdutoComponent {
             'Avaliar trigger baseado em comportamento de busca por crédito',
             'Exibir simulação de crédito como feature educacional, não como oferta direta',
           ],
+          resumoIA: 'Os dois experimentos com oferta proativa de crédito na home testaram variações de posicionamento e segmentação, mas chegaram ao mesmo resultado: a queda de NPS foi consistente independentemente de onde o banner aparecia ou para qual perfil era exibido. O contexto importou mais do que a relevância do produto. Usuários em navegação passiva na home não estão em estado mental de decisão financeira, e qualquer oferta de crédito nesse momento é interpretada como oportunismo — não como serviço.',
         },
         {
           experimento: 'Substituição parcial do FAQ por chatbot automatizado',
@@ -183,6 +190,7 @@ export class MemoriaProdutoComponent {
             'Testar busca inteligente no FAQ antes de introduzir chatbot conversacional',
             'Avaliar base de conhecimento com vídeos curtos como alternativa ao FAQ textual',
           ],
+          resumoIA: 'Os experimentos de setembro e outubro de 2024 revelaram um padrão que vai além da tecnologia do chatbot em si: o problema não foi a automação, mas a ausência de saída. Quando o usuário percebe que está preso em um loop sem acesso a um humano, a frustração ultrapassa a do problema original. O segundo experimento foi especialmente revelador — a versão com escalonamento humano acessível em dois cliques mostrou que a automação pode funcionar bem se o design contemplar, desde o início, os casos que ela inevitavelmente não vai resolver.',
         },
         {
           experimento: 'Gamificação de metas de investimento',
@@ -198,6 +206,7 @@ export class MemoriaProdutoComponent {
             'Avaliar mecânica de progresso visual aplicada apenas a usuários com menos de 6 meses',
             'Testar notificações de conquistas financeiras pessoais (milestones privados)',
           ],
+          resumoIA: 'A mecânica de pontos por metas de investimento funcionou bem para um segmento, mas prejudicou outro — e o saldo líquido foi negativo. O que os dados revelaram é que a gamificação não é neutra: usuários mais experientes interpretaram a mecânica como infantilização do produto, e o ranking público entre pares exacerbou esse efeito. A lição central é que estratégias de engajamento precisam ser invisíveis para quem não quer ser engajado — ou seja, precisam ser opt-in, e não impostas como padrão da experiência.',
         },
       ],
       insightAreas: [
@@ -228,6 +237,7 @@ export class MemoriaProdutoComponent {
             'Testar busca por reconhecimento de voz para usuários mobile do IB',
             'Avaliar sugestões inteligentes baseadas no histórico de buscas do usuário',
           ],
+          resumoIA: 'Os dois experimentos do primeiro trimestre de 2024 testaram, de formas complementares, como tornar a busca mais acessível e responsiva afetaria o comportamento de uso. O resultado mais significativo não foi o ganho absoluto de sessões, mas a mudança no padrão: com a barra sempre visível e resultados em tempo real, usuários com longos históricos de transações deixaram de navegar por menus e passaram a usar a busca como porta de entrada principal. Isso sugere que, para este perfil, uma arquitetura flat com busca central pode ser mais eficaz do que qualquer hierarquia de menu bem desenhada.',
         },
         {
           experimento: 'Redesign do fluxo de agendamento de pagamentos recorrentes',
@@ -242,6 +252,7 @@ export class MemoriaProdutoComponent {
             'Avaliar template de pagamentos recorrentes por favorecido',
             'Medir impacto de resumo mensal de agendamentos na retenção dos usuários',
           ],
+          resumoIA: 'A análise de funil que antecedeu os experimentos identificou o ponto exato de maior abandono: a transição entre confirmação e recibo. Consolidar essas duas telas foi a intervenção de maior impacto isolado, elevando a taxa de conclusão em 31 pontos percentuais. O segundo experimento, com o calendário visual, confirmou que representações visuais de datas reduzem erros de seleção e aumentam a confiança do usuário na escolha — um efeito mais relevante do que a equipe esperava para um público corporativo que, em tese, tinha alta familiaridade com o sistema.',
         },
         {
           experimento: 'Alerta proativo de débito automático com 3 dias de antecedência',
@@ -256,6 +267,7 @@ export class MemoriaProdutoComponent {
             'Avaliar opção de postergar o débito direto pelo alerta (sem acessar o app)',
             'Medir impacto de alertas via SMS para usuários que desativaram notificações push',
           ],
+          resumoIA: 'O resultado dos dois experimentos deixou claro que o timing de uma comunicação proativa importa tanto quanto o conteúdo. Alertas enviados com 72 horas de antecedência foram percebidos como um serviço de transparência — enquanto alertas no dia anterior foram interpretados como lembretes de cobrança. O dado mais relevante para o roadmap é a queda de 34% nos acionamentos de suporte por surpresa na fatura: isso representa não apenas melhora de NPS, mas redução real de custo operacional, o que eleva a prioridade estratégica dessa direção.',
         },
       ],
       naoFuncionaram: [
@@ -273,6 +285,7 @@ export class MemoriaProdutoComponent {
             'Avaliar personalização automática baseada em frequência de uso por seção',
             'Implementar "modo compacto" vs. "modo completo" como única escolha binária',
           ],
+          resumoIA: 'A proposta de personalização total do dashboard partia de uma premissa razoável — usuários querem controle. O que os dados revelaram é que controle e configuração são coisas distintas. Usuários que configuraram o dashboard retornaram menos, não mais, porque o esforço inicial de setup criou uma expectativa que o resultado não correspondeu. O padrão otimizado baseado em heatmap, que a equipe considerava menos sofisticado, performou melhor justamente por eliminar a decisão inicial do usuário e entregar valor imediato sem fricção de configuração.',
         },
         {
           experimento: 'Tutorial em vídeo obrigatório para novos usuários no primeiro acesso',
@@ -288,6 +301,7 @@ export class MemoriaProdutoComponent {
             'Avaliar base de conhecimento pesquisável acessível a qualquer momento',
             'Implementar tour guiado opcional com acionamento pelo próprio usuário',
           ],
+          resumoIA: 'O experimento partiu de um modelo de onboarding bem estabelecido em produtos de consumo — e falhou por não considerar o contexto específico do usuário de IB. A taxa de abandono imediato de 18% é expressiva, mas o dado mais revelador é que os usuários que completaram o tutorial não tiveram melhor engajamento posterior. Isso indica que o problema não era falta de conhecimento, mas a percepção de que o tutorial bloqueava o acesso ao que o usuário realmente queria fazer. Para perfis que valorizam autonomia e eficiência, onboarding forçado é uma barreira, não um benefício.',
         },
       ],
       insightAreas: [
@@ -318,6 +332,7 @@ export class MemoriaProdutoComponent {
             'Avaliar agrupamento por data de vencimento como critério adicional ao CNPJ',
             'Medir impacto de limite configurável de aprovação por alçada hierárquica',
           ],
+          resumoIA: 'Os dois experimentos de outubro e novembro de 2023 abordaram o problema do pagamento em lote por ângulos complementares: o primeiro testou como organizar os dados (agrupamento automático vs. manual), e o segundo testou como apresentar a interface (visual vs. upload de arquivo). Ambos tiveram resultados expressivos, mas o mais transformador foi o agrupamento por CNPJ — não apenas pelo ganho de tempo, mas porque mudou a percepção do produto. Empresas com alto volume de pagamentos passaram a ver o sistema como um aliado operacional, não apenas como um canal de transação.',
         },
         {
           experimento: 'Exportação de extrato em CSV e OFX direto da listagem',
@@ -332,6 +347,7 @@ export class MemoriaProdutoComponent {
             'Avaliar integração direta com ERPs via API para conciliação automática',
             'Medir adoção de formato OFX parametrizável por categoria de despesa',
           ],
+          resumoIA: 'Os dois experimentos mostraram que a exportação de dados é, para o usuário PJ, um caso de uso prioritário — não uma funcionalidade secundária. Colocar o botão de exportação diretamente na listagem, sem desviar para um menu de relatórios, reduziu em 61% os chamados ao suporte para obtenção de extratos. O segundo experimento com presets de período confirmou que usuários PJ têm padrões de consulta previsíveis e que qualquer esforço extra além dos atalhos comuns (7, 30 ou 90 dias) é percebido como obstáculo desnecessário.',
         },
         {
           experimento: 'Indicador de limite de crédito PJ em tempo real no dashboard',
@@ -346,6 +362,7 @@ export class MemoriaProdutoComponent {
             'Avaliar alerta proativo quando limite cai abaixo de threshold configurável pela empresa',
             'Implementar comparativo de limite utilizado vs. mesmo período anterior',
           ],
+          resumoIA: 'A hipótese era que visibilidade proativa do limite de crédito disponível aumentaria a utilização do produto — e os dados confirmaram isso de forma direta. Mas o resultado mais interessante veio do segundo experimento: a diferença entre dados em tempo real e atualização D+1 gerou aumento de 22% em sessões, sugerindo que a confiança do usuário PJ no dado está diretamente ligada à percepção de que ele é atual. Em contextos onde decisões financeiras são tomadas com frequência ao longo do dia, a defasagem de 24 horas é suficiente para tornar o indicador irrelevante.',
         },
       ],
       naoFuncionaram: [
@@ -363,6 +380,7 @@ export class MemoriaProdutoComponent {
             'Avaliar precisão de modelo por CNAE em sandbox antes do lançamento',
             'Aplicar categorização automática somente a fornecedores com histórico superior a 3 meses',
           ],
+          resumoIA: 'Os experimentos de abril e maio de 2024 testaram modelos diferentes de categorização automática, mas ambos esbarraram no mesmo problema fundamental: no contexto PJ, onde precisão contábil é um requisito, uma taxa de erro de 23% é percebida como retrabalho — não como assistência. O resultado mais revelador foi a comparação entre categorização silenciosa e com confirmação: mesmo a versão com confirmação teve NPS negativo, porque o usuário já havia perdido a confiança no modelo antes de validar qualquer sugestão. Isso redefine o threshold mínimo de precisão para qualquer automação neste segmento.',
         },
         {
           experimento: 'Onboarding assistido em vídeo para novos operadores do sistema',
@@ -378,6 +396,7 @@ export class MemoriaProdutoComponent {
             'Avaliar base de conhecimento com casos de uso práticos segmentados por CNAE',
             'Implementar modo de treino em sandbox separado do ambiente de produção real',
           ],
+          resumoIA: 'Os experimentos confirmaram algo que a equipe suspeitava, mas não havia testado formalmente: operadores PJ não consomem conteúdo educacional de forma linear. Eles chegam ao sistema com um objetivo específico e buscam diretamente a funcionalidade — qualquer obstáculo antes disso é interpretado como perda de tempo. O dado mais revelador foi que o tutorial obrigatório gerou abandono, mas os usuários retornaram e completaram a tarefa por conta própria. O produto era utilizável; o onboarding é que estava no caminho.',
         },
       ],
       insightAreas: [
@@ -408,6 +427,7 @@ export class MemoriaProdutoComponent {
             'Testar gráfico de pizza semanal de gastos por categoria na home',
             'Avaliar alertas de orçamento configuráveis por categoria',
           ],
+          resumoIA: 'Os dois experimentos de março e abril de 2024 transformaram o extrato de cartão de um registro passivo de débitos em um painel ativo de gestão financeira. O ganho de 29% em sessões na área de extrato é significativo, mas o indicador mais relevante é que a mudança de comportamento foi espontânea — usuários passaram a acessar o app proativamente para acompanhar gastos, sem qualquer incentivo adicional. A adoção de 61% da categorização automática, muito acima do esperado, confirmou que usuários preferem categorias propostas pelo sistema quando são precisas, em vez de configurações manuais.',
         },
         {
           experimento: 'Redesign do fluxo de contestação de lançamento na fatura',
@@ -422,6 +442,7 @@ export class MemoriaProdutoComponent {
             'Avaliar histórico de contestações anteriores como referência no fluxo atual',
             'Medir impacto de previsão de prazo de resolução no NPS durante a contestação',
           ],
+          resumoIA: 'O redesign do fluxo de contestação foi guiado por uma análise de funil que revelava 8 etapas onde a maioria dos usuários desistia antes de concluir. Ao consolidar em 3 etapas e adicionar rastreamento em tempo real, o experimento eliminou simultaneamente dois problemas distintos: a barreira de conclusão, resolvida pela simplificação, e a ansiedade pós-envio, resolvida pelo status ao vivo. A queda de 44% nos chamados ao SAC sobre contestações é o dado mais concreto do impacto — e indica que parte significativa do volume de suporte era gerada pela interface, não pelo processo em si.',
         },
         {
           experimento: 'Alerta de fatura próxima ao vencimento com resumo de gastos',
@@ -436,6 +457,7 @@ export class MemoriaProdutoComponent {
             'Avaliar comparativo de gastos do mês vs. mesmo mês anterior no alerta',
             'Medir impacto de opção de agendar o pagamento direto pelo alerta',
           ],
+          resumoIA: 'Os experimentos de novembro e dezembro de 2023 testaram duas dimensões do mesmo alerta de fatura: o conteúdo e o timing. O resultado mais inesperado foi o impacto do resumo de categorias no comportamento de pagamento — usuários que viram um sumário dos gastos antes do vencimento pagaram mais a fatura integral, sugerindo que transparência sobre o que foi gasto reduz a resistência ao pagamento total. O timing de 5 dias foi superior ao de 3 dias, indicando que o usuário precisa de tempo suficiente para reorganizar o orçamento, não apenas de um lembrete de última hora.',
         },
         {
           experimento: 'Atalho rápido para bloqueio e desbloqueio do cartão na home',
@@ -450,6 +472,7 @@ export class MemoriaProdutoComponent {
             'Testar bloqueio temporário automático baseado em uso suspeito detectado',
             'Avaliar widget de controles do cartão como módulo dedicado na tela inicial',
           ],
+          resumoIA: 'Os dois experimentos testaram tanto a visibilidade quanto o mecanismo do atalho de bloqueio, e os resultados foram complementares. O aumento de 140% no uso do bloqueio preventivo não significa que houve mais incidentes — significa que usuários que antes ignoravam a funcionalidade passaram a usá-la como medida de precaução habitual. Isso alterou a percepção do produto: o cartão deixou de ser algo que o usuário administra apenas quando há um problema, e passou a ser algo que ele controla proativamente. O ganho de NPS reflete essa mudança de posição, não apenas a praticidade do atalho.',
         },
       ],
       naoFuncionaram: [
@@ -467,6 +490,7 @@ export class MemoriaProdutoComponent {
             'Avaliar cashback direto vs. pontos acumuláveis como benefício de engajamento',
             'Medir impacto de metas de hábitos financeiros (pagar fatura integral por 3 meses)',
           ],
+          resumoIA: 'Os dois experimentos sobre gamificação chegaram à mesma conclusão por caminhos diferentes: comparação social em contexto financeiro gera desconforto, não engajamento. O ranking público foi o fator de maior rejeição — usuários relataram sentir sua situação financeira exposta de forma involuntária. O segundo experimento, que testou critérios diferentes de pontuação, confirmou que o problema não estava na mecânica de pontos em si, mas no componente social. Em finanças pessoais, qualquer comparação entre usuários é percebida como invasão de privacidade, independentemente de quão anônima seja a apresentação.',
         },
         {
           experimento: 'Extrato detalhado com subcategorias de 3 níveis de granularidade',
@@ -482,6 +506,7 @@ export class MemoriaProdutoComponent {
             'Avaliar subcategorias apenas para as 3 maiores categorias de gasto do usuário',
             'Implementar tendência mensal por categoria de nível 1 como visualização padrão',
           ],
+          resumoIA: 'A hipótese de que mais granularidade nos dados financeiros levaria a maior engajamento mostrou-se incorreta para o perfil médio de usuário de cartão. Os dois experimentos evidenciaram que a hierarquia de três níveis não apenas não foi usada — ela afastou usuários que antes acessavam o extrato regularmente. O fenômeno é contraintuitivo: oferecer mais informação sem que o usuário a tenha pedido cria um senso de complexidade que se associa negativamente ao produto. O nível de categoria principal resolve a grande maioria dos casos de uso sem gerar essa sobrecarga.',
         },
         {
           experimento: 'Oferta de seguro de viagem no momento do bloqueio internacional',
@@ -497,6 +522,7 @@ export class MemoriaProdutoComponent {
             'Avaliar sugestão baseada em histórico de viagens internacionais recorrentes',
             'Medir receptividade via push 7 dias antes de viagens recorrentes identificadas',
           ],
+          resumoIA: 'Os dois experimentos confirmaram que o momento da oferta importa mais do que a relevância do produto ou o perfil do usuário. O fluxo de bloqueio internacional é um contexto de alta concentração — o usuário está resolvendo um problema pontual e qualquer desvio é percebido como obstáculo. O resultado negativo foi consistente tanto quando a oferta aparecia como banner inline quanto quando ocupava uma tela dedicada, sugerindo que o problema não era de formato, mas de contexto. Ofertas de seguro têm maior receptividade quando surgem no momento em que o usuário demonstra intenção de viajar, não quando está gerenciando o cartão.',
         },
       ],
       insightAreas: [
