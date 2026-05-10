@@ -154,6 +154,16 @@
                   </div>
                   <h3 class="card-titulo">{{ item.experimento }}</h3>
                   <p class="card-insight">{{ item.insight }}</p>
+                  <div class="card-actions">
+                    <p-button
+                      label="Aprofundar"
+                      icon="pi pi-arrow-right"
+                      iconPos="right"
+                      size="small"
+                      [text]="true"
+                      (click)="openModal(item)"
+                    />
+                  </div>
                 </div>
               </div>
             }
@@ -205,6 +215,16 @@
                       <span>{{ item.aprendizado }}</span>
                     </div>
                   }
+                  <div class="card-actions">
+                    <p-button
+                      label="Aprofundar"
+                      icon="pi pi-arrow-right"
+                      iconPos="right"
+                      size="small"
+                      [text]="true"
+                      (click)="openModal(item)"
+                    />
+                  </div>
                 </div>
               </div>
             }
@@ -251,3 +271,98 @@
   </p-tabs>
 
 </div>
+
+<!-- ── Aprofundar Modal ───────────────────────────────────── -->
+<p-dialog
+  [header]="selectedLearning()?.experimento ?? ''"
+  [visible]="modalVisible()"
+  (visibleChange)="modalVisible.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '1272px', maxWidth: '96vw' }">
+
+  @if (selectedLearning(); as item) {
+    <div class="modal-body">
+
+      <!-- Meta row -->
+      <div class="modal-meta-row">
+        <p-tag [value]="item.area" severity="secondary" />
+        <span class="modal-meta-period">
+          <i class="pi pi-calendar"></i> {{ item.periodo }}
+        </span>
+        <span class="modal-meta-impact" [class.success]="!item.aprendizado" [class.danger]="!!item.aprendizado">
+          {{ item.metrica }} {{ item.impacto }}
+        </span>
+      </div>
+
+      <!-- Section 1: source experiments -->
+      <div class="modal-section">
+        <h3 class="modal-section-title">
+          <i class="pi pi-chart-scatter"></i>
+          Experimentos que geraram este aprendizado
+        </h3>
+        <div class="exp-cards-list">
+          @for (exp of item.experimentos; track exp.titulo) {
+            <div class="exp-card">
+              <div class="exp-card-top">
+                <div class="exp-card-info">
+                  <p class="exp-card-titulo">{{ exp.titulo }}</p>
+                  <p class="exp-card-variante">{{ exp.variante }}</p>
+                </div>
+                <p-tag value="Concluído" severity="secondary" />
+              </div>
+              <div class="exp-card-footer">
+                <div class="exp-card-meta">
+                  <span class="exp-card-meta-item">
+                    <i class="pi pi-calendar"></i> {{ exp.periodo }}
+                  </span>
+                  <div class="exp-card-meta-row">
+                    <span class="exp-card-meta-item">{{ exp.metrica }}</span>
+                    <span class="exp-card-meta-sep">·</span>
+                    <span class="exp-card-resultado"
+                      [class.positive]="isPositiveResult(exp.resultado)"
+                      [class.negative]="!isPositiveResult(exp.resultado)">
+                      {{ exp.resultado }}
+                    </span>
+                  </div>
+                </div>
+                <p-button
+                  label="Ir para o experimento"
+                  icon="pi pi-arrow-right"
+                  iconPos="right"
+                  size="small"
+                  [outlined]="true"
+                />
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Section 2: alternatives -->
+      <div class="modal-section modal-section-alt">
+        <h3 class="modal-section-title">
+          <i class="pi pi-lightbulb"></i>
+          Alternativas para explorar
+        </h3>
+        <ul class="modal-list modal-list-alt">
+          @for (alt of item.alternativas; track alt) {
+            <li>{{ alt }}</li>
+          }
+        </ul>
+      </div>
+
+    </div>
+  }
+
+  <ng-template pTemplate="footer">
+    <div class="modal-footer-actions">
+      <p-button icon="pi pi-bookmark" [outlined]="true" severity="secondary" />
+      <p-button icon="pi pi-share-alt" [outlined]="true" severity="secondary" />
+      <p-button icon="pi pi-download" [outlined]="true" severity="secondary" />
+      <p-button icon="pi pi-plus" />
+    </div>
+  </ng-template>
+
+</p-dialog>
