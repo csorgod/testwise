@@ -345,9 +345,9 @@
         </p-carousel>
       </div>
 
-      <!-- AI Summary -->
-      @if (item.resumoIA) {
-        <div class="modal-ai-summary">
+      <!-- AI Block: análise + alternativas -->
+      <div class="modal-ai-summary">
+        @if (item.resumoIA) {
           <div class="ai-summary-header">
             <div class="ai-badge">
               <i class="pi pi-sparkles"></i>
@@ -356,15 +356,13 @@
             <span class="ai-summary-label">Análise dos experimentos</span>
           </div>
           <p class="ai-summary-text">{{ item.resumoIA }}</p>
-        </div>
-      }
+          <div class="ai-divider"></div>
+        }
 
-      <!-- Section 2: alternatives -->
-      <div class="modal-section">
-        <h3 class="modal-section-title">
-          <i class="pi pi-lightbulb"></i>
-          Alternativas para explorar
-        </h3>
+        <div class="ai-alternatives-header">
+          <h3 class="ai-alternatives-title">Alternativas para explorar</h3>
+          <p class="ai-alternatives-desc">Com base na análise dos experimentos acima, identificamos hipóteses com potencial de impacto que ainda não foram testadas neste produto.</p>
+        </div>
         <div class="alternativas-grid">
           @for (alt of item.alternativas; track alt.texto) {
             <div class="alternativa-card">
