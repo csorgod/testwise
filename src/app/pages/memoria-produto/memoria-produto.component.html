@@ -356,6 +356,20 @@
             <span class="ai-summary-label">Análise dos experimentos</span>
           </div>
           <p class="ai-summary-text">{{ item.resumoIA }}</p>
+
+          @if (addedMetrics().length) {
+            <div class="ai-metrics-row">
+              <span class="ai-metrics-label">Métricas incluídas:</span>
+              @for (m of addedMetrics(); track m.id) {
+                <span class="ai-metric-chip" (click)="toggleMetric(m)">
+                  <i class="pi pi-chart-line"></i>
+                  {{ m.name }}
+                  <i class="pi pi-times ai-metric-remove"></i>
+                </span>
+              }
+            </div>
+          }
+
           <div class="ai-divider"></div>
         }
 
@@ -374,6 +388,16 @@
                 />
               </div>
               <div class="alternativa-footer">
+                <p-button
+                  label="Simular"
+                  icon="pi pi-users"
+                  size="small"
+                  [text]="true"
+                  severity="secondary"
+                  pTooltip="Testar no sistema de Personas Sintéticas"
+                  tooltipPosition="top"
+                  (click)="simularAlternativa(alt.texto)"
+                />
                 <p-button
                   label="Criar experimento"
                   icon="pi pi-plus"
@@ -395,8 +419,34 @@
       <p-button icon="pi pi-bookmark" [outlined]="true" severity="secondary" />
       <p-button icon="pi pi-share-alt" [outlined]="true" severity="secondary" />
       <p-button icon="pi pi-download" [outlined]="true" severity="secondary" />
-      <p-button icon="pi pi-plus" />
+      <p-button
+        label="Adicionar métrica"
+        icon="pi pi-chart-line"
+        [outlined]="true"
+        (click)="metricPopover.toggle($event)"
+      />
     </div>
   </ng-template>
 
 </p-dialog>
+
+<p-popover #metricPopover>
+  <div class="metric-popover">
+    <p class="metric-popover-title">Métricas de negócio</p>
+    @for (metric of metricService.metrics; track metric.id) {
+      <div
+        class="metric-popover-item"
+        [class.selected]="isMetricAdded(metric)"
+        (click)="toggleMetric(metric)"
+      >
+        <span class="metric-popover-info">
+          <span class="metric-popover-name">{{ metric.name }}</span>
+          <span class="metric-popover-cat">{{ metric.category }}</span>
+        </span>
+        @if (isMetricAdded(metric)) {
+          <i class="pi pi-check metric-popover-check"></i>
+        }
+      </div>
+    }
+  </div>
+</p-popover>

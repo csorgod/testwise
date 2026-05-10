@@ -7,7 +7,10 @@ import { SelectModule } from 'primeng/select';
 import { SkeletonModule } from 'primeng/skeleton';
 import { Dialog } from 'primeng/dialog';
 import { CarouselModule } from 'primeng/carousel';
+import { Popover } from 'primeng/popover';
+import { TooltipModule } from 'primeng/tooltip';
 import { ProductService } from '../../core/product.service';
+import { MetricService, Metric } from '../../core/metric.service';
 
 interface Hipotese {
   titulo: string;
@@ -56,16 +59,18 @@ interface ProductMemoria {
 
 @Component({
   selector: 'app-memoria-produto',
-  imports: [FormsModule, Tabs, TabList, Tab, TabPanels, TabPanel, Tag, ButtonModule, SelectModule, SkeletonModule, Dialog, CarouselModule],
+  imports: [FormsModule, Tabs, TabList, Tab, TabPanels, TabPanel, Tag, ButtonModule, SelectModule, SkeletonModule, Dialog, CarouselModule, Popover, TooltipModule],
   templateUrl: './memoria-produto.component.html',
   styleUrl: './memoria-produto.component.scss',
 })
 export class MemoriaProdutoComponent {
   protected productService = inject(ProductService);
+  protected metricService  = inject(MetricService);
 
   loading = signal(true);
   selectedLearning = signal<Aprendizado | null>(null);
   modalVisible = signal(false);
+  addedMetrics = signal<Metric[]>([]);
 
   private loadingTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -80,7 +85,25 @@ export class MemoriaProdutoComponent {
 
   openModal(item: Aprendizado): void {
     this.selectedLearning.set(item);
+    this.addedMetrics.set([]);
     this.modalVisible.set(true);
+  }
+
+  simularAlternativa(texto: string): void {
+    const params = new URLSearchParams({ hipotese: texto });
+    window.open(`https://personas-sinteticas.internal/simular?${params}`, '_blank');
+  }
+
+  isMetricAdded(metric: Metric): boolean {
+    return this.addedMetrics().some(m => m.id === metric.id);
+  }
+
+  toggleMetric(metric: Metric): void {
+    this.addedMetrics.update(current =>
+      this.isMetricAdded(metric)
+        ? current.filter(m => m.id !== metric.id)
+        : [...current, metric]
+    );
   }
 
   isPositiveResult(resultado: string): boolean {
