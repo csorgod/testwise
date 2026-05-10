@@ -639,7 +639,7 @@ export class VisaoGeralComponent {
     },
   ];
 
-  impactSeverity(impact: Insight['impact']): 'danger' | 'warn' | 'info' {
-    return ({ Alto: 'danger', Médio: 'warn', Baixo: 'info' } as const)[impact];
+  impactSeverity(impact: Insight['impact']): 'success' | 'warn' | 'info' {
+    return ({ Alto: 'success', Médio: 'warn', Baixo: 'info' } as const)[impact];
   }
 }

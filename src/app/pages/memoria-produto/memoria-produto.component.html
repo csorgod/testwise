@@ -360,16 +360,33 @@
       }
 
       <!-- Section 2: alternatives -->
-      <div class="modal-section modal-section-alt">
+      <div class="modal-section">
         <h3 class="modal-section-title">
           <i class="pi pi-lightbulb"></i>
           Alternativas para explorar
         </h3>
-        <ul class="modal-list modal-list-alt">
-          @for (alt of item.alternativas; track alt) {
-            <li>{{ alt }}</li>
+        <div class="alternativas-grid">
+          @for (alt of item.alternativas; track alt.texto) {
+            <div class="alternativa-card">
+              <div class="alternativa-top">
+                <p class="alternativa-texto">{{ alt.texto }}</p>
+                <p-tag
+                  [value]="'Potencial ' + alt.potencial"
+                  [severity]="alt.potencial === 'Alto' ? 'success' : 'warn'"
+                />
+              </div>
+              <div class="alternativa-footer">
+                <p-button
+                  label="Criar experimento"
+                  icon="pi pi-plus"
+                  iconPos="right"
+                  size="small"
+                  [outlined]="true"
+                />
+              </div>
+            </div>
           }
-        </ul>
+        </div>
       </div>
 
     </div>
