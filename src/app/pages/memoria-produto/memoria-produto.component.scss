@@ -482,7 +482,8 @@
   display: flex;
   flex-direction: row;
   gap: 0.75rem;
-  flex-wrap: wrap;
+  overflow-x: auto;
+  padding-bottom: 4px;
 }
 
 .exp-card {
@@ -492,7 +493,7 @@
   padding: 1rem 1.25rem;
   display: flex;
   flex-direction: column;
-  flex: 1 1 260px;
+  flex: 0 0 calc((100% - 1.5rem) / 3);
   min-width: 0;
 }
 

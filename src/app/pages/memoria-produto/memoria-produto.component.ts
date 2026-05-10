@@ -102,6 +102,7 @@ export class MemoriaProdutoComponent {
             { titulo: 'Remoção da etapa de revisão pré-envio', periodo: 'Mai 2024', metrica: 'Taxa de conclusão', resultado: '+8%', variante: 'Fluxo sem tela de revisão vs. fluxo com revisão obrigatória' },
             { titulo: 'Fusão das telas de valor e destinatário', periodo: 'Jun 2024', metrica: 'Conversão', resultado: '+12%', variante: 'Etapa única combinada vs. duas telas separadas' },
             { titulo: 'Biometria simplificada para valores abaixo de R$50', periodo: 'Ago 2024', metrica: 'Abandono', resultado: '-18%', variante: 'Confirmação rápida vs. biometria completa' },
+            { titulo: 'Confirmação via push para contatos recorrentes', periodo: 'Set 2024', metrica: 'Taxa de conclusão', resultado: '+27%', variante: 'Aprovação por push notification vs. confirmação in-app obrigatória' },
           ],
           alternativas: [
             'Testar fluxo de 1 etapa para contatos frequentes (sem etapa de revisão)',
