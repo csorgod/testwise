@@ -44,58 +44,69 @@
     </div>
   </div>
 
-  <!-- ── AI Recommendations ─────────────────────────────────── -->
-  <div class="ai-recommendations">
-    <div class="ai-header">
-      <div class="ai-badge">
-        <i class="pi pi-sparkles"></i>
-        IA
-      </div>
-      <div>
-        <h2 class="ai-title">Próximas hipóteses recomendadas</h2>
-        <p class="ai-subtitle">Baseado na análise de {{ stats().total }} experimentos executados neste produto</p>
-      </div>
+  <!-- ── Subprodutos ───────────────────────────────────────── -->
+  <div class="subprodutos-section">
+    <div class="subprodutos-header">
+      <h2 class="subprodutos-title">SubProdutos</h2>
+      <p class="subprodutos-subtitle">{{ productService.selected().name }}</p>
     </div>
 
-    <div class="hipoteses-grid">
-      @if (loading()) {
-        @for (_ of [1, 2, 3]; track $index) {
-          <div class="hipotese-card-skel">
-            <p-skeleton width="120px" height="22px" borderRadius="6px" />
-            <p-skeleton width="100%" height="18px" borderRadius="4px" />
-            <p-skeleton width="85%" height="18px" borderRadius="4px" />
-            <p-skeleton width="100%" height="56px" borderRadius="4px" />
-            <p-skeleton width="100%" height="1px" />
-            <p-skeleton width="90px" height="30px" borderRadius="6px" />
+    @if (loading()) {
+      <div class="sub-skel-row">
+        @for (_ of [1, 2, 3, 4, 5]; track $index) {
+          <div class="sub-skel-card">
+            <div class="sub-skel-top">
+              <p-skeleton width="40px" height="40px" borderRadius="10px" />
+              <p-skeleton width="90px" height="14px" borderRadius="4px" />
+            </div>
+            <p-skeleton width="100%" height="13px" borderRadius="4px" />
+            <p-skeleton width="80%"  height="13px" borderRadius="4px" />
+            <div class="sub-skel-foot">
+              <p-skeleton width="50px" height="22px" borderRadius="6px" />
+              <p-skeleton width="84px" height="22px" borderRadius="6px" />
+            </div>
           </div>
         }
-      } @else {
-        @for (h of hipoteses(); track h.titulo) {
-          <div class="hipotese-card">
-            <div class="hipotese-header">
-              <p-tag [value]="'Confiança ' + h.confianca" [severity]="h.severity" />
-              <span class="hipotese-metrica">
-                <i class="pi pi-chart-line"></i> {{ h.metricaAlvo }}
-              </span>
-            </div>
-            <h3 class="hipotese-titulo">{{ h.titulo }}</h3>
-            <p class="hipotese-racional">{{ h.racional }}</p>
-            <div class="hipotese-footer">
-              <div class="hipotese-impacto">
-                <span class="impacto-label">Impacto estimado</span>
-                <span class="impacto-valor">{{ h.impactoEstimado }}</span>
+      </div>
+    } @else {
+      <p-carousel
+        [value]="subprodutos()"
+        [numVisible]="5"
+        [numScroll]="2"
+        [circular]="false"
+        [responsiveOptions]="subCarouselOptions"
+        class="sub-carousel">
+        <ng-template #item let-sub>
+          <div class="sub-card" [class.sub-card-selected]="selectedSubproduto()?.nome === sub.nome" (click)="selectSubproduto(sub)">
+            <div class="sub-card-top">
+              <div class="sub-icon-wrap">
+                <i class="pi {{ sub.icon }}"></i>
               </div>
+              <span class="sub-nome">{{ sub.nome }}</span>
+            </div>
+            <p class="sub-descricao">{{ sub.descricao }}</p>
+            <div class="sub-ai-row" [class.sub-ai-hidden]="!sub.temHipoteses">
+              <div class="ai-badge"><i class="pi pi-sparkles"></i> IA</div>
+              <span class="sub-ai-text">hipóteses disponíveis</span>
+            </div>
+            <div class="sub-card-footer">
+              <p-tag
+                [value]="sub.potencial"
+                [severity]="potencialSeverity(sub.potencial)"
+              />
               <p-button
-                label="Criar experimento"
-                icon="pi pi-plus"
+                label="Aprofundar"
+                icon="pi pi-arrow-right"
+                iconPos="right"
                 size="small"
-                [outlined]="true"
+                [text]="true"
+                (click)="openSubprodutoModal(sub); $event.stopPropagation()"
               />
             </div>
           </div>
-        }
-      }
-    </div>
+        </ng-template>
+      </p-carousel>
+    }
   </div>
 
   <!-- ── Learnings Tabs ─────────────────────────────────────── -->

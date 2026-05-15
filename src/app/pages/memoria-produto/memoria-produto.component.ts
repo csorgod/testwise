@@ -57,8 +57,17 @@ interface InsightArea {
   pontos: string[];
 }
 
+interface Subproduto {
+  nome: string;
+  icon: string;
+  potencial: 'Alto' | 'Médio' | 'Baixo';
+  descricao: string;
+  temHipoteses: boolean;
+}
+
 interface ProductMemoria {
   stats:          { total: number; funcionaram: number; naoFuncionaram: number };
+  subprodutos:    Subproduto[];
   hipoteses:      Hipotese[];
   funcionaram:    Aprendizado[];
   naoFuncionaram: Aprendizado[];
@@ -76,7 +85,8 @@ export class MemoriaProdutoComponent {
   protected metricService  = inject(MetricService);
 
   loading = signal(true);
-  selectedLearning = signal<Aprendizado | null>(null);
+  selectedLearning   = signal<Aprendizado | null>(null);
+  selectedSubproduto = signal<Subproduto | null>(null);
   modalVisible = signal(false);
   addedMetrics = signal<Metric[]>([]);
   resumoLoading  = signal(false);
@@ -96,10 +106,32 @@ export class MemoriaProdutoComponent {
   constructor() {
     effect(() => {
       this.productService.selected();
+      this.selectedSubproduto.set(null);
       if (this.loadingTimer) clearTimeout(this.loadingTimer);
       this.loading.set(true);
       this.loadingTimer = setTimeout(() => this.loading.set(false), 650);
     }, { allowSignalWrites: true });
+  }
+
+  selectSubproduto(sub: Subproduto): void {
+    this.selectedSubproduto.update(cur => cur?.nome === sub.nome ? null : sub);
+  }
+
+  private matchesSubproduto(item: Aprendizado, sub: Subproduto): boolean {
+    const words = sub.nome.toLowerCase().split(/[\s&\/]+/).filter(w => w.length > 3);
+    const haystack = `${item.area} ${item.experimento} ${item.metrica}`.toLowerCase();
+    return words.some(w => haystack.includes(w));
+  }
+
+  openSubprodutoModal(sub: Subproduto): void {
+    const all = [...this.funcionaram(), ...this.naoFuncionaram()];
+    const lower = sub.nome.toLowerCase();
+    const match = all.find(e =>
+      e.area.toLowerCase().includes(lower) ||
+      e.experimento.toLowerCase().includes(lower) ||
+      lower.split(' ').some(word => word.length > 3 && e.area.toLowerCase().includes(word))
+    ) ?? all[0];
+    if (match) this.openModal(match);
   }
 
   openModal(item: Aprendizado): void {
@@ -226,6 +258,16 @@ export class MemoriaProdutoComponent {
   private readonly productData: Record<string, ProductMemoria> = {
     mobile: {
       stats: { total: 47, funcionaram: 23, naoFuncionaram: 14 },
+      subprodutos: [
+        { nome: 'Pix & Transferências', icon: 'pi-send',       potencial: 'Alto',  temHipoteses: true,  descricao: 'Transferências instantâneas e pagamentos via chave Pix' },
+        { nome: 'Cartões',              icon: 'pi-credit-card', potencial: 'Alto',  temHipoteses: true,  descricao: 'Gestão e controle de cartões de crédito e débito' },
+        { nome: 'Investimentos',        icon: 'pi-chart-line',  potencial: 'Médio', temHipoteses: true,  descricao: 'Aplicações em renda fixa, fundos e bolsa de valores' },
+        { nome: 'Empréstimos',          icon: 'pi-wallet',      potencial: 'Médio', temHipoteses: true,  descricao: 'Crédito pessoal e simulações de financiamento' },
+        { nome: 'Seguros',              icon: 'pi-shield',      potencial: 'Médio', temHipoteses: false, descricao: 'Proteção patrimonial, cobertura de vida e acidentes' },
+        { nome: 'Câmbio',               icon: 'pi-globe',       potencial: 'Médio', temHipoteses: false, descricao: 'Compra e venda de moeda estrangeira e remessas' },
+        { nome: 'Consórcio',            icon: 'pi-users',       potencial: 'Baixo', temHipoteses: false, descricao: 'Compra programada de bens sem cobrança de juros' },
+        { nome: 'Crédito Imobiliário',  icon: 'pi-home',        potencial: 'Baixo', temHipoteses: false, descricao: 'Financiamento para compra e reforma de imóveis' },
+      ],
       hipoteses: [
         { titulo: 'Simplificar etapas de confirmação no fluxo PIX', racional: '3 experimentos mostram que cada etapa extra de confirmação reduz a conversão em ~8%. O fluxo atual tem 4 etapas; usuários de alta frequência esperam no máximo 2.', metricaAlvo: 'Conversão', impactoEstimado: '+18% a +24%', confianca: 'Alta', severity: 'success' },
         { titulo: 'Personalização contextual da home com base em padrão de uso', racional: 'Usuários com padrão de acesso definido respondem melhor a conteúdo adaptado ao comportamento histórico do que a layouts fixos.', metricaAlvo: 'Sessões por usuário', impactoEstimado: '+10% a +15%', confianca: 'Média', severity: 'warn' },
@@ -354,6 +396,16 @@ export class MemoriaProdutoComponent {
 
     ib: {
       stats: { total: 38, funcionaram: 18, naoFuncionaram: 11 },
+      subprodutos: [
+        { nome: 'Investimentos',        icon: 'pi-chart-line', potencial: 'Alto',  temHipoteses: true,  descricao: 'Renda fixa, fundos e renda variável para pessoa física' },
+        { nome: 'Folha de Pagamento',   icon: 'pi-list',       potencial: 'Alto',  temHipoteses: true,  descricao: 'Processamento e gestão de salários e encargos' },
+        { nome: 'Câmbio',               icon: 'pi-globe',      potencial: 'Médio', temHipoteses: true,  descricao: 'Operações de câmbio e remessas internacionais' },
+        { nome: 'Crédito Empresarial',  icon: 'pi-wallet',     potencial: 'Médio', temHipoteses: true,  descricao: 'Linhas de crédito para capital de giro e expansão' },
+        { nome: 'Cobrança',             icon: 'pi-receipt',    potencial: 'Médio', temHipoteses: false, descricao: 'Emissão e gestão de boletos bancários' },
+        { nome: 'Trade Finance',        icon: 'pi-truck',      potencial: 'Médio', temHipoteses: false, descricao: 'Financiamento de operações de comércio exterior' },
+        { nome: 'Seguros Corporativos', icon: 'pi-shield',     potencial: 'Baixo', temHipoteses: false, descricao: 'Coberturas para ativos e operações da empresa' },
+        { nome: 'Conta Corrente',       icon: 'pi-building',   potencial: 'Baixo', temHipoteses: false, descricao: 'Movimentação e gestão da conta bancária' },
+      ],
       hipoteses: [
         { titulo: 'Reorganização do menu de navegação principal por frequência de uso', racional: 'Análise de heatmap mostra que 70% dos acessos se concentram em 4 funcionalidades. Reestruturar o menu pode reduzir o tempo médio para a primeira ação em até 40%.', metricaAlvo: 'Sessões', impactoEstimado: '+20% a +30%', confianca: 'Alta', severity: 'success' },
         { titulo: 'Autenticação via QR Code para operações sensíveis no desktop', racional: 'Usuários relatam fricção alta na autenticação por token físico. Experimentos com QR Code no mobile mostraram redução de 55% no tempo de autenticação.', metricaAlvo: 'Conversão', impactoEstimado: '+12% a +18%', confianca: 'Média', severity: 'warn' },
@@ -449,6 +501,16 @@ export class MemoriaProdutoComponent {
 
     pj: {
       stats: { total: 29, funcionaram: 14, naoFuncionaram: 9 },
+      subprodutos: [
+        { nome: 'Gestão de Pagamentos', icon: 'pi-receipt',    potencial: 'Alto',  temHipoteses: true,  descricao: 'Pagamento de fornecedores e contas em lote' },
+        { nome: 'Capital de Giro',      icon: 'pi-wallet',     potencial: 'Alto',  temHipoteses: true,  descricao: 'Crédito de curto prazo para operações diárias' },
+        { nome: 'Conta PJ',             icon: 'pi-building',   potencial: 'Alto',  temHipoteses: true,  descricao: 'Conta corrente e serviços bancários para empresas' },
+        { nome: 'Folha de Pagamento',   icon: 'pi-list',       potencial: 'Médio', temHipoteses: true,  descricao: 'Processamento de salários e encargos trabalhistas' },
+        { nome: 'Cobrança Digital',     icon: 'pi-tag',        potencial: 'Médio', temHipoteses: true,  descricao: 'Emissão de boletos e cobranças recorrentes' },
+        { nome: 'Câmbio',               icon: 'pi-globe',      potencial: 'Médio', temHipoteses: false, descricao: 'Câmbio e remessas para importação e exportação' },
+        { nome: 'Cartões PJ',           icon: 'pi-credit-card',potencial: 'Baixo', temHipoteses: false, descricao: 'Cartões corporativos para despesas da empresa' },
+        { nome: 'Investimentos PJ',     icon: 'pi-chart-line', potencial: 'Baixo', temHipoteses: false, descricao: 'Aplicações de curto e longo prazo para empresas' },
+      ],
       hipoteses: [
         { titulo: 'Fluxo de pagamento em lote com aprovação multinível configurável', racional: 'Empresas com mais de 3 operadores relatam gargalo no processo de aprovação. Um fluxo com aprovação hierárquica configurável pode aumentar o volume de transações mensais em até 35%.', metricaAlvo: 'Faturamento', impactoEstimado: '+25% a +35%', confianca: 'Alta', severity: 'success' },
         { titulo: 'Relatório de fluxo de caixa com exportação parametrizável', racional: 'O principal motivo de acesso ao IB PJ é consulta de extratos para conciliação. Facilitar a exportação pode reduzir o tempo médio dessa tarefa de 12 para 3 minutos.', metricaAlvo: 'NPS', impactoEstimado: '+10 a +16 pts', confianca: 'Média', severity: 'warn' },
@@ -544,6 +606,16 @@ export class MemoriaProdutoComponent {
 
     cards: {
       stats: { total: 43, funcionaram: 21, naoFuncionaram: 13 },
+      subprodutos: [
+        { nome: 'Cartão de Crédito',      icon: 'pi-credit-card', potencial: 'Alto',  temHipoteses: true,  descricao: 'Compras nacionais e internacionais com parcelamento' },
+        { nome: 'Programa de Pontos',      icon: 'pi-star',        potencial: 'Alto',  temHipoteses: true,  descricao: 'Acúmulo e resgate de pontos por gastos realizados' },
+        { nome: 'Cartão Virtual',          icon: 'pi-mobile',      potencial: 'Alto',  temHipoteses: true,  descricao: 'Número temporário para compras online com segurança' },
+        { nome: 'Crédito Rotativo',        icon: 'pi-chart-bar',   potencial: 'Médio', temHipoteses: true,  descricao: 'Crédito automático para pagamento mínimo da fatura' },
+        { nome: 'Seguros de Cartão',       icon: 'pi-shield',      potencial: 'Médio', temHipoteses: true,  descricao: 'Proteção contra fraudes e perda do cartão' },
+        { nome: 'Antecipação de Parcelas', icon: 'pi-calendar',    potencial: 'Médio', temHipoteses: false, descricao: 'Quitação antecipada de compras parceladas' },
+        { nome: 'Cartão Pré-pago',         icon: 'pi-wallet',      potencial: 'Baixo', temHipoteses: false, descricao: 'Cartão recarregável sem necessidade de conta bancária' },
+        { nome: 'Cashback',                icon: 'pi-sync',        potencial: 'Baixo', temHipoteses: false, descricao: 'Devolução de percentual sobre as compras realizadas' },
+      ],
       hipoteses: [
         { titulo: 'Visualização de gastos por categoria com alertas de orçamento', racional: '2 experimentos com categorização visual mostraram aumento de 29% nas sessões. Adicionar alertas de orçamento configuráveis deve ampliar o engajamento e a percepção de controle financeiro.', metricaAlvo: 'Sessões', impactoEstimado: '+15% a +22%', confianca: 'Alta', severity: 'success' },
         { titulo: 'Fluxo simplificado de solicitação de aumento de limite em 2 etapas', racional: 'O fluxo atual tem 6 etapas com 3 confirmações redundantes. Dados de funil mostram 58% de abandono na etapa 3. Simplificação pode dobrar a taxa de conclusão.', metricaAlvo: 'Conversão', impactoEstimado: '+28% a +40%', confianca: 'Alta', severity: 'success' },
@@ -670,8 +742,30 @@ export class MemoriaProdutoComponent {
   };
 
   stats          = computed(() => this.productData[this.productService.selected().id].stats);
+  subprodutos    = computed(() => {
+    const list = this.productData[this.productService.selected().id].subprodutos;
+    return [...list].sort((a, b) => Number(b.temHipoteses) - Number(a.temHipoteses));
+  });
   hipoteses      = computed(() => this.productData[this.productService.selected().id].hipoteses);
-  funcionaram    = computed(() => this.productData[this.productService.selected().id].funcionaram);
-  naoFuncionaram = computed(() => this.productData[this.productService.selected().id].naoFuncionaram);
+  funcionaram    = computed(() => {
+    const list = this.productData[this.productService.selected().id].funcionaram;
+    const sub  = this.selectedSubproduto();
+    return sub ? list.filter(e => this.matchesSubproduto(e, sub)) : list;
+  });
+  naoFuncionaram = computed(() => {
+    const list = this.productData[this.productService.selected().id].naoFuncionaram;
+    const sub  = this.selectedSubproduto();
+    return sub ? list.filter(e => this.matchesSubproduto(e, sub)) : list;
+  });
   insightAreas   = computed(() => this.productData[this.productService.selected().id].insightAreas);
+
+  readonly subCarouselOptions = [
+    { breakpoint: '1100px', numVisible: 4, numScroll: 2 },
+    { breakpoint: '768px',  numVisible: 3, numScroll: 1 },
+    { breakpoint: '480px',  numVisible: 2, numScroll: 1 },
+  ];
+
+  potencialSeverity(p: 'Alto' | 'Médio' | 'Baixo'): 'success' | 'warn' | 'danger' {
+    return p === 'Alto' ? 'success' : p === 'Médio' ? 'warn' : 'danger';
+  }
 }
