@@ -1,0 +1,183 @@
+<div class="experimentos">
+
+  <!-- ── Page header ───────────────────────────────────────── -->
+  <div class="page-header">
+    <div class="page-title-group">
+      <h1 class="page-title">Experimentos</h1>
+      <p class="page-subtitle">{{ productService.selected().name }} — histórico e status dos testes</p>
+    </div>
+
+    <div class="page-controls">
+      <div class="selectors-row">
+        <span class="selector-label">Produto</span>
+        <p-select
+          [options]="productService.products"
+          [ngModel]="productService.selected()"
+          (ngModelChange)="productService.select($event)"
+          optionLabel="name"
+          [style]="{ minWidth: '160px' }"
+        />
+      </div>
+
+      <p-select
+        [options]="statusOptions"
+        [ngModel]="selectedStatus()"
+        (ngModelChange)="selectedStatus.set($event)"
+        optionLabel="label"
+        optionValue="value"
+        [style]="{ width: '170px' }"
+      />
+
+      <p-select
+        [options]="resultadoOptions"
+        [ngModel]="selectedResultado()"
+        (ngModelChange)="selectedResultado.set($event)"
+        optionLabel="label"
+        optionValue="value"
+        [style]="{ width: '185px' }"
+      />
+
+      <p-iconfield>
+        <p-inputicon class="pi pi-search" />
+        <input
+          pInputText
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
+          placeholder="Buscar experimento..."
+          class="search-input"
+        />
+      </p-iconfield>
+    </div>
+  </div>
+
+  <!-- ── KPI cards ─────────────────────────────────────────── -->
+  <div class="kpi-grid">
+    @for (kpi of kpis(); track kpi.label) {
+      <div class="kpi-card" [attr.data-accent]="kpi.accent">
+        <div class="kpi-body">
+          <span class="kpi-label">{{ kpi.label }}</span>
+          @if (loading()) {
+            <p-skeleton height="2rem" borderRadius="6px" class="kpi-skel-value" />
+          } @else {
+            <span class="kpi-value">{{ kpi.value }}</span>
+          }
+        </div>
+        <div class="kpi-icon-wrap" [class.dimmed]="loading()">
+          <i class="pi {{ kpi.icon }}"></i>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- ── Experiments list ──────────────────────────────────── -->
+  <div class="list-section">
+
+    @if (!loading()) {
+      <div class="list-header">
+        <span class="list-count">
+          {{ filteredExperimentos().length }}
+          {{ filteredExperimentos().length === 1 ? 'experimento encontrado' : 'experimentos encontrados' }}
+        </span>
+      </div>
+    }
+
+    <div class="experimentos-list">
+
+      @if (loading()) {
+        @for (_ of [1, 2, 3, 4]; track $index) {
+          <div class="exp-skel-card">
+            <p-skeleton width="4px" height="100%" borderRadius="0" />
+            <div class="exp-skel-body">
+              <div class="exp-skel-row">
+                <p-skeleton width="240px" height="18px" borderRadius="4px" />
+                <p-skeleton width="72px"  height="20px" borderRadius="6px" />
+                <p-skeleton width="90px"  height="20px" borderRadius="6px" />
+              </div>
+              <p-skeleton width="85%" height="14px" borderRadius="4px" />
+              <p-skeleton width="60%" height="14px" borderRadius="4px" />
+              <div class="exp-skel-row" style="margin-top:.25rem">
+                <p-skeleton width="80px"  height="14px" borderRadius="4px" />
+                <p-skeleton width="60px"  height="14px" borderRadius="4px" />
+                <p-skeleton width="100px" height="14px" borderRadius="4px" />
+              </div>
+            </div>
+          </div>
+        }
+
+      } @else if (pagedExperimentos().length === 0) {
+        <div class="empty-state">
+          <i class="pi pi-search"></i>
+          <p>Nenhum experimento encontrado para os filtros selecionados.</p>
+        </div>
+
+      } @else {
+        @for (exp of pagedExperimentos(); track exp.id) {
+          <div class="exp-row-card">
+            <div class="exp-indicator" [class]="accentClass(exp)"></div>
+            <div class="exp-content">
+
+              <div class="exp-header">
+                <h3 class="exp-nome">{{ exp.nome }}</h3>
+                <div class="exp-tags">
+                  <p-tag [value]="exp.area" severity="secondary" />
+                  <p-tag [value]="exp.status" [severity]="statusSeverity(exp.status)" />
+                  @if (exp.resultado) {
+                    <p-tag [value]="exp.resultado" [severity]="resultadoSeverity(exp.resultado)" />
+                  }
+                </div>
+              </div>
+
+              <p class="exp-hipotese">{{ exp.hipotese }}</p>
+
+              <div class="exp-footer">
+                <div class="exp-meta">
+                  <span class="exp-meta-item">
+                    <i class="pi pi-chart-line"></i> {{ exp.metrica }}
+                  </span>
+                  @if (exp.impacto) {
+                    <span class="exp-meta-item positive">
+                      <i class="pi pi-arrow-up-right"></i> {{ exp.impacto }}
+                    </span>
+                  }
+                  <span class="exp-meta-item">
+                    <i class="pi pi-calendar"></i>
+                    {{ exp.inicioLabel }}{{ exp.fimLabel ? ' – ' + exp.fimLabel : '' }}
+                  </span>
+                  <span class="exp-meta-item">
+                    <i class="pi pi-copy"></i> {{ exp.variantes }} variantes
+                  </span>
+                  @if (exp.confianca) {
+                    <span class="exp-meta-item" [class.high-confidence]="exp.confianca >= 95">
+                      <i class="pi pi-verified"></i> {{ exp.confianca }}% confiança
+                    </span>
+                  }
+                </div>
+                <p-button
+                  label="Ver detalhes"
+                  icon="pi pi-arrow-right"
+                  iconPos="right"
+                  size="small"
+                  [text]="true"
+                />
+              </div>
+
+            </div>
+          </div>
+        }
+      }
+
+    </div>
+
+    @if (!loading() && filteredExperimentos().length > pageSize) {
+      <p-paginator
+        [rows]="pageSize"
+        [totalRecords]="filteredExperimentos().length"
+        [first]="currentPage() * pageSize"
+        (onPageChange)="onPageChange($event)"
+        [showFirstLastIcon]="false"
+      />
+    }
+
+  </div>
+
+</div>

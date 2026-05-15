@@ -11,4 +11,9 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/memoria-produto/memoria-produto.component').then(m => m.MemoriaProdutoComponent),
   },
+  {
+    path: 'experimentos',
+    loadComponent: () =>
+      import('./pages/experimentos/experimentos.component').then(m => m.ExperimentosComponent),
+  },
 ];
