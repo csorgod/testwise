@@ -355,7 +355,18 @@
             </div>
             <span class="ai-summary-label">Análise dos experimentos</span>
           </div>
-          <p class="ai-summary-text">{{ item.resumoIA }}</p>
+          @if (resumoLoading()) {
+            <div class="ai-summary-skel">
+              <p-skeleton width="100%" height="14px" borderRadius="4px" />
+              <p-skeleton width="97%"  height="14px" borderRadius="4px" />
+              <p-skeleton width="95%"  height="14px" borderRadius="4px" />
+              <p-skeleton width="88%"  height="14px" borderRadius="4px" />
+              <p-skeleton width="92%"  height="14px" borderRadius="4px" />
+              <p-skeleton width="70%"  height="14px" borderRadius="4px" />
+            </div>
+          } @else {
+            <p class="ai-summary-text">{{ customResumoIA() ?? item.resumoIA }}</p>
+          }
 
           @if (addedMetrics().length) {
             <div class="ai-metrics-row">

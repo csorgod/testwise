@@ -632,6 +632,13 @@
   margin: 0;
 }
 
+.ai-summary-skel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.2rem 0 0.1rem;
+}
+
 // ── Experiment cards (inside modal) ──────────────────────
 :host ::ng-deep .exp-carousel {
   .p-carousel-item {

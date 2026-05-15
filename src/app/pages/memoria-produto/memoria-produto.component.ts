@@ -79,6 +79,8 @@ export class MemoriaProdutoComponent {
   selectedLearning = signal<Aprendizado | null>(null);
   modalVisible = signal(false);
   addedMetrics = signal<Metric[]>([]);
+  resumoLoading  = signal(false);
+  customResumoIA = signal<string | null>(null);
 
   chatVisible  = signal(false);
   chatMessages = signal<ChatMessage[]>([]);
@@ -89,6 +91,7 @@ export class MemoriaProdutoComponent {
   @ViewChild('fileInput')     private fileInput!:       ElementRef<HTMLInputElement>;
 
   private loadingTimer: ReturnType<typeof setTimeout> | null = null;
+  private resumoTimer:  ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
     effect(() => {
@@ -102,6 +105,9 @@ export class MemoriaProdutoComponent {
   openModal(item: Aprendizado): void {
     this.selectedLearning.set(item);
     this.addedMetrics.set([]);
+    this.customResumoIA.set(null);
+    this.resumoLoading.set(false);
+    if (this.resumoTimer) clearTimeout(this.resumoTimer);
     this.modalVisible.set(true);
   }
 
@@ -120,6 +126,35 @@ export class MemoriaProdutoComponent {
         ? current.filter(m => m.id !== metric.id)
         : [...current, metric]
     );
+    this.regenerateResumo();
+  }
+
+  private readonly resumoTemplates: Array<(item: Aprendizado, metricNames: string) => string> = [
+    (item, names) =>
+      `Incorporando ${names} como referência adicional, a leitura dos experimentos de "${item.experimento}" ganha um novo ângulo. Os dados originais já apontavam para um padrão consistente — com essa métrica em perspectiva, é possível identificar que o impacto observado se reflete diretamente em ${names}, reforçando a relevância estratégica deste aprendizado para experimentos futuros.`,
+    (item, names) =>
+      `Com ${names} como pano de fundo, os resultados de "${item.experimento}" revelam uma correlação que a análise original não destacava explicitamente. O padrão de comportamento identificado nos experimentos tem efeitos mensuráveis em ${names} — o que eleva a prioridade desta linha de investigação e sugere que novas hipóteses nesta direção teriam alto potencial de impacto combinado.`,
+    (item, names) =>
+      `A inclusão de ${names} muda a perspectiva sobre os experimentos de "${item.experimento}". Ao considerar essa métrica, emergem conexões entre os comportamentos observados e os resultados em ${names} que ampliam o escopo do aprendizado original. A convergência desses indicadores é um sinal claro de que a hipótese central tem suporte mais amplo do que a análise inicial sugeria.`,
+  ];
+
+  private regenerateResumo(): void {
+    if (this.resumoTimer) clearTimeout(this.resumoTimer);
+    const metrics = this.addedMetrics();
+    if (metrics.length === 0) {
+      this.customResumoIA.set(null);
+      this.resumoLoading.set(false);
+      return;
+    }
+    this.resumoLoading.set(true);
+    this.resumoTimer = setTimeout(() => {
+      const item = this.selectedLearning();
+      if (!item) { this.resumoLoading.set(false); return; }
+      const metricNames = metrics.map(m => m.name).join(', ');
+      const idx = metrics.length % this.resumoTemplates.length;
+      this.customResumoIA.set(this.resumoTemplates[idx](item, metricNames));
+      this.resumoLoading.set(false);
+    }, 1400);
   }
 
   isPositiveResult(resultado: string): boolean {
