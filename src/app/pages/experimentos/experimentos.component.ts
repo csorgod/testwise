@@ -44,7 +44,7 @@ export class ExperimentosComponent {
   readonly pageSize = 8;
 
   readonly resultadoOptions = [
-    { label: 'Todos os resultados', value: 'todos'        },
+    { label: 'Resultados', value: 'todos'        },
     { label: 'Em andamento',        value: 'em_andamento' },
     { label: 'Vencedor',            value: 'vencedor'     },
     { label: 'Inconclusivo',        value: 'inconclusivo' },
@@ -52,7 +52,7 @@ export class ExperimentosComponent {
   ];
 
   readonly statusOptions = [
-    { label: 'Todos',           value: 'todos'       },
+    { label: 'Status',           value: 'todos'       },
     { label: 'Ativos',          value: 'ativo'       },
     { label: 'Concluídos',      value: 'concluido'   },
     { label: 'Em rascunho',     value: 'rascunho'    },
