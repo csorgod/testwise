@@ -227,15 +227,39 @@ export class MemoriaProdutoComponent {
     'Os experimentos confirmam que o comportamento do usuário neste cenário é mais sensível ao contexto de uso do que à funcionalidade em si. Vale explorar variações que preservem o aprendizado central enquanto testam novas hipóteses adjacentes.',
   ];
 
-  openChat(): void {
-    const item = this.selectedLearning();
-    if (!item) return;
-    this.chatMessages.set([{
-      role: 'ai',
-      text: `Pronto(a) para se aprofudar no experimento "${item.experimento}"?`,
-    }]);
+  private readonly contextResponses: Array<(ctx: string) => string> = [
+    ctx => `Com base nos experimentos analisados em "${ctx}", os padrões de comportamento do usuário são consistentes e replicáveis. As métricas indicam oportunidades claras de melhoria — especialmente nos pontos de maior fricção no funil.`,
+    ctx => `Os dados de "${ctx}" revelam aprendizados importantes. Identificamos padrões recorrentes que podem orientar as próximas hipóteses, com destaque para as intervenções que mais impactaram a conversão e o engajamento.`,
+    ctx => `Em "${ctx}", a convergência dos experimentos aponta para uma direção clara. O comportamento do usuário neste cenário é mais sensível ao contexto de uso do que às funcionalidades isoladas — o que amplia as opções de hipóteses a explorar.`,
+  ];
+
+  openAiChat(context?: string): void {
     this.chatInput = '';
     this.chatVisible.set(true);
+
+    if (!context) {
+      this.chatMessages.set([{ role: 'ai', text: 'Olá! Como posso ajudar você com os dados deste produto?' }]);
+      return;
+    }
+
+    this.chatMessages.set([
+      { role: 'ai',  text: 'Olá! Como posso ajudar você com os dados deste produto?' },
+      { role: 'user', text: `Quero explorar o tema "${context}"` },
+    ]);
+    this.chatLoading.set(true);
+    setTimeout(() => this.scrollChatToBottom(), 50);
+    setTimeout(() => {
+      const idx = context.length % this.contextResponses.length;
+      this.chatMessages.update(msgs => [...msgs, { role: 'ai', text: this.contextResponses[idx](context) }]);
+      this.chatLoading.set(false);
+      setTimeout(() => this.scrollChatToBottom(), 50);
+    }, 1300);
+  }
+
+  openChat(): void {
+    const item = this.selectedLearning();
+    const context = item ? `o experimento "${item.experimento}"` : undefined;
+    this.openAiChat(context);
   }
 
   sendChatMessage(): void {

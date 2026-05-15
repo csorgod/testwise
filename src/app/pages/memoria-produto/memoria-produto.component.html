@@ -150,6 +150,7 @@
                 size="small"
                 [text]="true"
                 severity="info"
+                (click)="openAiChat(area.tema)"
               />
             </div>
           </div>
@@ -390,16 +391,17 @@
 
 </p-dialog>
 
-<!-- ── Chat IA dialog ─────────────────────────────────────── -->
-<p-dialog
-  header="Chat com IA"
-  [visible]="chatVisible()"
-  (visibleChange)="chatVisible.set($event)"
-  [modal]="false"
-  [draggable]="true"
-  [resizable]="false"
-  [style]="{ width: '440px', maxWidth: '95vw', height: '540px' }"
-  styleClass="chat-dialog">
+<!-- ── AI Chat Sidebar ────────────────────────────────────── -->
+<div class="ai-chat-backdrop" [class.visible]="chatVisible()" (click)="chatVisible.set(false)"></div>
+
+<div class="ai-chat-sidebar" [class.open]="chatVisible()">
+  <div class="ai-chat-header">
+    <div class="ai-chat-header-left">
+      <div class="ai-badge"><i class="pi pi-sparkles"></i> IA</div>
+      <span class="ai-chat-title">Chat com IA</span>
+    </div>
+    <p-button icon="pi pi-times" [text]="true" severity="secondary" (click)="chatVisible.set(false)" />
+  </div>
 
   <div class="chat-messages" #chatMessagesEl>
     @for (msg of chatMessages(); track $index) {
@@ -422,23 +424,26 @@
     }
   </div>
 
-  <ng-template pTemplate="footer">
-    <div class="chat-input-row">
-      <input
-        pInputText
-        [(ngModel)]="chatInput"
-        placeholder="Faça uma pergunta..."
-        (keydown.enter)="sendChatMessage()"
-        class="chat-input"
-      />
-      <p-button
-        icon="pi pi-send"
-        [disabled]="!chatInput.trim() || chatLoading()"
-        (click)="sendChatMessage()"
-      />
-    </div>
-  </ng-template>
-</p-dialog>
+  <div class="ai-chat-input">
+    <input
+      pInputText
+      [(ngModel)]="chatInput"
+      placeholder="Faça uma pergunta..."
+      (keydown.enter)="sendChatMessage()"
+      class="chat-input"
+    />
+    <p-button
+      icon="pi pi-send"
+      [disabled]="!chatInput.trim() || chatLoading()"
+      (click)="sendChatMessage()"
+    />
+  </div>
+</div>
+
+<!-- ── FAB ────────────────────────────────────────────────── -->
+<button class="ai-fab" (click)="openAiChat()">
+  <i class="pi pi-sparkles"></i>
+</button>
 
 <p-popover #metricPopover>
   <div class="metric-popover">
