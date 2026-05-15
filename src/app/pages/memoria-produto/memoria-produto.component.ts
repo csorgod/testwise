@@ -89,6 +89,7 @@ export class MemoriaProdutoComponent {
   selectedLearning   = signal<Aprendizado | null>(null);
   selectedSubproduto = signal<Subproduto | null>(null);
   modalVisible = signal(false);
+  modalTitle   = signal('');
   addedMetrics = signal<Metric[]>([]);
   resumoLoading   = signal(false);
   customResumoIA  = signal<string | null>(null);
@@ -127,19 +128,60 @@ export class MemoriaProdutoComponent {
     this.insightsTimer = setTimeout(() => this.insightsLoading.set(false), 550);
   }
 
+  private readonly subprodutoExperimentoMap: Record<string, Record<string, string>> = {
+    mobile: {
+      'Pix & Transferências': 'Novo fluxo de confirmação PIX — 2 etapas',
+      'Cartões':              'Widget de saldo mascarado acessível na tela inicial',
+      'Investimentos':        'CTA de investimento com destaque laranja na home',
+      'Empréstimos':          'Oferta proativa de crédito pessoal na tela inicial',
+      'Seguros':              'Substituição parcial do FAQ por chatbot automatizado',
+      'Câmbio':               'Gamificação de metas de investimento',
+      'Consórcio':            'Onboarding guiado para novos usuários com PIX',
+      'Crédito Imobiliário':  'Oferta proativa de crédito pessoal na tela inicial',
+    },
+    ib: {
+      'Investimentos':        'Redesign do fluxo de agendamento de pagamentos recorrentes',
+      'Folha de Pagamento':   'Alerta proativo de débito automático com 3 dias de antecedência',
+      'Câmbio':               'Alerta proativo de débito automático com 3 dias de antecedência',
+      'Crédito Empresarial':  'Busca global integrada a todos os serviços e extratos',
+      'Cobrança':             'Tutorial em vídeo obrigatório para novos usuários no primeiro acesso',
+      'Trade Finance':        'Redesign do fluxo de agendamento de pagamentos recorrentes',
+      'Seguros Corporativos': 'Dashboard personalizado com widgets arrastáveis',
+      'Conta Corrente':       'Busca global integrada a todos os serviços e extratos',
+    },
+    pj: {
+      'Gestão de Pagamentos': 'Pagamento em lote com agrupamento de boletos por fornecedor',
+      'Capital de Giro':      'Indicador de limite de crédito PJ em tempo real no dashboard',
+      'Conta PJ':             'Exportação de extrato em CSV e OFX direto da listagem',
+      'Folha de Pagamento':   'Pagamento em lote com agrupamento de boletos por fornecedor',
+      'Cobrança Digital':     'Exportação de extrato em CSV e OFX direto da listagem',
+      'Câmbio':               'Categorização automática de despesas por IA',
+      'Cartões PJ':           'Onboarding assistido em vídeo para novos operadores do sistema',
+      'Investimentos PJ':     'Indicador de limite de crédito PJ em tempo real no dashboard',
+    },
+    cards: {
+      'Cartão de Crédito':      'Categorização visual de gastos no extrato com ícones por categoria',
+      'Programa de Pontos':     'Programa de pontos gamificado com ranking público entre usuários',
+      'Cartão Virtual':         'Atalho rápido para bloqueio e desbloqueio do cartão na home',
+      'Crédito Rotativo':       'Alerta de fatura próxima ao vencimento com resumo de gastos',
+      'Seguros de Cartão':      'Oferta de seguro de viagem no momento do bloqueio internacional',
+      'Antecipação de Parcelas':'Alerta de fatura próxima ao vencimento com resumo de gastos',
+      'Cartão Pré-pago':        'Extrato detalhado com subcategorias de 3 níveis de granularidade',
+      'Cashback':               'Programa de pontos gamificado com ranking público entre usuários',
+    },
+  };
+
   openSubprodutoModal(sub: Subproduto): void {
+    const productId = this.productService.selected().id;
+    const titulo = this.subprodutoExperimentoMap[productId]?.[sub.nome];
     const all = [...this.funcionaram(), ...this.naoFuncionaram()];
-    const lower = sub.nome.toLowerCase();
-    const match = all.find(e =>
-      e.area.toLowerCase().includes(lower) ||
-      e.experimento.toLowerCase().includes(lower) ||
-      lower.split(' ').some(word => word.length > 3 && e.area.toLowerCase().includes(word))
-    ) ?? all[0];
-    if (match) this.openModal(match);
+    const match = (titulo ? all.find(e => e.experimento === titulo) : null) ?? all[0];
+    if (match) this.openModal(match, `Deep dive em ${sub.nome}`);
   }
 
-  openModal(item: Aprendizado): void {
+  openModal(item: Aprendizado, title?: string): void {
     this.selectedLearning.set(item);
+    this.modalTitle.set(title ?? item.experimento);
     this.addedMetrics.set([]);
     this.customResumoIA.set(null);
     this.resumoLoading.set(false);

@@ -211,7 +211,7 @@
 
 <!-- ── Aprofundar Modal ───────────────────────────────────── -->
 <p-dialog
-  [header]="selectedLearning()?.experimento ?? ''"
+  [header]="modalTitle()"
   [visible]="modalVisible()"
   (visibleChange)="modalVisible.set($event)"
   [modal]="true"
