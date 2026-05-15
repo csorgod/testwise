@@ -47,7 +47,7 @@
   <!-- ── Subprodutos ───────────────────────────────────────── -->
   <div class="subprodutos-section">
     <div class="subprodutos-header">
-      <h2 class="subprodutos-title">SubProdutos</h2>
+      <h2 class="subprodutos-title">Sub Produtos</h2>
       <p class="subprodutos-subtitle">{{ productService.selected().name }}</p>
     </div>
 
@@ -109,177 +109,102 @@
     }
   </div>
 
-  <!-- ── Learnings Tabs ─────────────────────────────────────── -->
-  <p-tabs value="0">
-    <p-tablist>
-      <p-tab value="0">
-        <i class="pi pi-check-circle"></i>
-        O que funcionou ({{ funcionaram().length }})
-      </p-tab>
-      <p-tab value="1">
-        <i class="pi pi-times-circle"></i>
-        O que não funcionou ({{ naoFuncionaram().length }})
-      </p-tab>
-      <p-tab value="2">
-        <i class="pi pi-lightbulb"></i>
-        Insights por área
-      </p-tab>
-    </p-tablist>
+  <!-- ── Insights por área ──────────────────────────────────── -->
+  <div class="insights-section">
+    <div class="insights-section-header">
+      <h2 class="insights-section-title">Insights do Produto</h2>
+      <p class="insights-section-subtitle">Padrões e aprendizados consolidados dos {{ stats().total }} experimentos executados</p>
+    </div>
 
-    <p-tabpanels>
-
-      <!-- Tab 1: O que funcionou -->
-      <p-tabpanel value="0">
-        <div class="aprendizados-list">
-          @if (loading()) {
-            @for (_ of [1, 2, 3]; track $index) {
-              <div class="card-skel">
-                <p-skeleton width="4px" height="100%" borderRadius="0" />
-                <div class="card-skel-body">
-                  <div class="card-skel-row">
-                    <p-skeleton width="80px" height="20px" borderRadius="6px" />
-                    <p-skeleton width="100px" height="14px" borderRadius="4px" />
-                    <p-skeleton width="90px" height="20px" borderRadius="6px" />
-                  </div>
-                  <p-skeleton width="70%" height="18px" borderRadius="4px" />
-                  <p-skeleton width="100%" height="40px" borderRadius="4px" />
-                </div>
-              </div>
-            }
-          } @else {
-            @for (item of funcionaram(); track item.experimento) {
-              <div class="aprendizado-card">
-                <div class="card-indicator success"></div>
-                <div class="card-content">
-                  <div class="card-header">
-                    <div class="card-meta">
-                      <p-tag [value]="item.area" severity="secondary" />
-                      <span class="card-periodo">
-                        <i class="pi pi-calendar"></i> {{ item.periodo }}
-                      </span>
-                    </div>
-                    <div class="card-impact success">
-                      <i class="pi pi-arrow-up-right"></i>
-                      {{ item.metrica }} {{ item.impacto }}
-                    </div>
-                  </div>
-                  <h3 class="card-titulo">{{ item.experimento }}</h3>
-                  <p class="card-insight">{{ item.insight }}</p>
-                  <div class="card-actions">
-                    <p-button
-                      label="Aprofundar"
-                      icon="pi pi-arrow-right"
-                      iconPos="right"
-                      size="small"
-                      [text]="true"
-                      (click)="openModal(item)"
-                    />
-                  </div>
-                </div>
-              </div>
-            }
-          }
-        </div>
-      </p-tabpanel>
-
-      <!-- Tab 2: O que não funcionou -->
-      <p-tabpanel value="1">
-        <div class="aprendizados-list">
-          @if (loading()) {
-            @for (_ of [1, 2, 3]; track $index) {
-              <div class="card-skel">
-                <p-skeleton width="4px" height="100%" borderRadius="0" />
-                <div class="card-skel-body">
-                  <div class="card-skel-row">
-                    <p-skeleton width="80px" height="20px" borderRadius="6px" />
-                    <p-skeleton width="100px" height="14px" borderRadius="4px" />
-                    <p-skeleton width="90px" height="20px" borderRadius="6px" />
-                  </div>
-                  <p-skeleton width="70%" height="18px" borderRadius="4px" />
-                  <p-skeleton width="100%" height="40px" borderRadius="4px" />
-                  <p-skeleton width="100%" height="48px" borderRadius="6px" />
-                </div>
-              </div>
-            }
-          } @else {
-            @for (item of naoFuncionaram(); track item.experimento) {
-              <div class="aprendizado-card">
-                <div class="card-indicator danger"></div>
-                <div class="card-content">
-                  <div class="card-header">
-                    <div class="card-meta">
-                      <p-tag [value]="item.area" severity="secondary" />
-                      <span class="card-periodo">
-                        <i class="pi pi-calendar"></i> {{ item.periodo }}
-                      </span>
-                    </div>
-                    <div class="card-impact danger">
-                      <i class="pi pi-arrow-down-right"></i>
-                      {{ item.metrica }} {{ item.impacto }}
-                    </div>
-                  </div>
-                  <h3 class="card-titulo">{{ item.experimento }}</h3>
-                  <p class="card-insight">{{ item.insight }}</p>
-                  @if (item.aprendizado) {
-                    <div class="card-aprendizado">
-                      <i class="pi pi-lightbulb"></i>
-                      <span>{{ item.aprendizado }}</span>
-                    </div>
-                  }
-                  <div class="card-actions">
-                    <p-button
-                      label="Aprofundar"
-                      icon="pi pi-arrow-right"
-                      iconPos="right"
-                      size="small"
-                      [text]="true"
-                      (click)="openModal(item)"
-                    />
-                  </div>
-                </div>
-              </div>
-            }
-          }
-        </div>
-      </p-tabpanel>
-
-      <!-- Tab 3: Insights por área -->
-      <p-tabpanel value="2">
-        @if (loading()) {
-          <div class="insights-grid">
-            @for (_ of [1, 2, 3]; track $index) {
-              <div class="insight-skel-card">
-                <p-skeleton width="60%" height="20px" borderRadius="6px" />
-                <p-skeleton width="100%" height="52px" borderRadius="4px" />
-                <p-skeleton width="95%" height="14px" borderRadius="4px" />
-                <p-skeleton width="88%" height="14px" borderRadius="4px" />
-                <p-skeleton width="92%" height="14px" borderRadius="4px" />
-                <p-skeleton width="80%" height="14px" borderRadius="4px" />
-              </div>
-            }
-          </div>
-        } @else {
-          <div class="insights-grid">
-            @for (area of insightAreas(); track area.tema) {
-              <div class="insight-area-card">
-                <div class="area-header">
-                  <i class="pi {{ area.icon }} area-icon"></i>
-                  <h3 class="area-tema">{{ area.tema }}</h3>
-                </div>
-                <p class="area-resumo">{{ area.resumo }}</p>
-                <ul class="area-pontos">
-                  @for (ponto of area.pontos; track ponto) {
-                    <li>{{ ponto }}</li>
-                  }
-                </ul>
-              </div>
-            }
+    @if (loading() || insightsLoading()) {
+      <div class="insights-grid">
+        @for (_ of [1, 2, 3]; track $index) {
+          <div class="insight-skel-card">
+            <p-skeleton width="60%" height="20px" borderRadius="6px" />
+            <p-skeleton width="100%" height="52px" borderRadius="4px" />
+            <p-skeleton width="95%" height="14px" borderRadius="4px" />
+            <p-skeleton width="88%" height="14px" borderRadius="4px" />
+            <p-skeleton width="92%" height="14px" borderRadius="4px" />
+            <p-skeleton width="80%" height="14px" borderRadius="4px" />
           </div>
         }
-      </p-tabpanel>
+      </div>
+    } @else {
+      <div class="insights-grid">
+        @for (area of insightAreas(); track area.tema) {
+          <div class="insight-area-card">
+            <div class="area-header">
+              <i class="pi {{ area.icon }} area-icon"></i>
+              <h3 class="area-tema">{{ area.tema }}</h3>
+            </div>
+            <p class="area-resumo">{{ area.resumo }}</p>
+            <ul class="area-pontos">
+              @for (ponto of area.pontos; track ponto) {
+                <li>{{ ponto }}</li>
+              }
+            </ul>
+            <div class="area-card-footer">
+              <p-button
+                label="Explorar"
+                icon="pi pi-sparkles"
+                size="small"
+                [text]="true"
+                severity="info"
+              />
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
 
-    </p-tabpanels>
-  </p-tabs>
+  <!-- ── Métricas para explorar ────────────────────────────── -->
+  <div class="metricas-section">
+    <div class="insights-section-header">
+      <h2 class="insights-section-title">Métricas para explorar</h2>
+      <p class="insights-section-subtitle">Métricas catalogadas disponíveis para uso em experimentos deste {{ selectedSubproduto() ? 'subproduto' : 'produto' }}</p>
+    </div>
+
+    @if (loading() || insightsLoading()) {
+      <div class="metricas-grid">
+        @for (_ of [1, 2, 3]; track $index) {
+          <div class="metrica-skel-card">
+            <p-skeleton width="32px" height="32px" borderRadius="8px" />
+            <div class="metrica-skel-info">
+              <p-skeleton width="100px" height="14px" borderRadius="4px" />
+              <p-skeleton width="64px"  height="12px" borderRadius="4px" />
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="metricas-grid">
+        @for (metric of explorarMetrics(); track metric.id) {
+          <div class="metrica-card">
+            <div class="metrica-card-main">
+              <div class="metrica-icon-wrap">
+                <i class="pi {{ metricIcon(metric.category) }}"></i>
+              </div>
+              <div class="metrica-info">
+                <span class="metrica-name">{{ metric.name }}</span>
+                <span class="metrica-category">{{ metric.category }}</span>
+              </div>
+            </div>
+            <div class="metrica-card-footer">
+              <p-button
+                label="Acessar"
+                icon="pi pi-arrow-right"
+                iconPos="right"
+                size="small"
+                [text]="true"
+                severity="info"
+              />
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
 
 </div>
 
@@ -289,6 +214,7 @@
   [visible]="modalVisible()"
   (visibleChange)="modalVisible.set($event)"
   [modal]="true"
+  [dismissableMask]="true"
   [draggable]="false"
   [resizable]="false"
   [style]="{ width: '1272px', maxWidth: '96vw' }">
@@ -311,7 +237,7 @@
       <div class="modal-section">
         <h3 class="modal-section-title">
           <i class="pi pi-chart-scatter"></i>
-          Experimentos que geraram este aprendizado
+          Experimentos executados
         </h3>
         <p-carousel
           [value]="item.experimentos"

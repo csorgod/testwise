@@ -1,6 +1,5 @@
 import { Component, computed, effect, inject, signal, ViewChild, ElementRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Tabs, TabList, Tab, TabPanels, TabPanel } from 'primeng/tabs';
 import { Tag } from 'primeng/tag';
 import { ButtonModule } from 'primeng/button';
 import { SelectModule } from 'primeng/select';
@@ -63,6 +62,8 @@ interface Subproduto {
   potencial: 'Alto' | 'Médio' | 'Baixo';
   descricao: string;
   temHipoteses: boolean;
+  insightTemas: string[];
+  metrics: string[];
 }
 
 interface ProductMemoria {
@@ -76,7 +77,7 @@ interface ProductMemoria {
 
 @Component({
   selector: 'app-memoria-produto',
-  imports: [FormsModule, Tabs, TabList, Tab, TabPanels, TabPanel, Tag, ButtonModule, SelectModule, SkeletonModule, Dialog, CarouselModule, Popover, TooltipModule, InputTextModule, SplitButtonModule],
+  imports: [FormsModule, Tag, ButtonModule, SelectModule, SkeletonModule, Dialog, CarouselModule, Popover, TooltipModule, InputTextModule, SplitButtonModule],
   templateUrl: './memoria-produto.component.html',
   styleUrl: './memoria-produto.component.scss',
 })
@@ -89,8 +90,9 @@ export class MemoriaProdutoComponent {
   selectedSubproduto = signal<Subproduto | null>(null);
   modalVisible = signal(false);
   addedMetrics = signal<Metric[]>([]);
-  resumoLoading  = signal(false);
-  customResumoIA = signal<string | null>(null);
+  resumoLoading   = signal(false);
+  customResumoIA  = signal<string | null>(null);
+  insightsLoading = signal(false);
 
   chatVisible  = signal(false);
   chatMessages = signal<ChatMessage[]>([]);
@@ -100,8 +102,9 @@ export class MemoriaProdutoComponent {
   @ViewChild('chatMessagesEl') private chatMessagesEl!: ElementRef<HTMLDivElement>;
   @ViewChild('fileInput')     private fileInput!:       ElementRef<HTMLInputElement>;
 
-  private loadingTimer: ReturnType<typeof setTimeout> | null = null;
-  private resumoTimer:  ReturnType<typeof setTimeout> | null = null;
+  private loadingTimer:   ReturnType<typeof setTimeout> | null = null;
+  private resumoTimer:    ReturnType<typeof setTimeout> | null = null;
+  private insightsTimer:  ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
     effect(() => {
@@ -115,12 +118,13 @@ export class MemoriaProdutoComponent {
 
   selectSubproduto(sub: Subproduto): void {
     this.selectedSubproduto.update(cur => cur?.nome === sub.nome ? null : sub);
+    this.triggerInsightsLoading();
   }
 
-  private matchesSubproduto(item: Aprendizado, sub: Subproduto): boolean {
-    const words = sub.nome.toLowerCase().split(/[\s&\/]+/).filter(w => w.length > 3);
-    const haystack = `${item.area} ${item.experimento} ${item.metrica}`.toLowerCase();
-    return words.some(w => haystack.includes(w));
+  private triggerInsightsLoading(): void {
+    if (this.insightsTimer) clearTimeout(this.insightsTimer);
+    this.insightsLoading.set(true);
+    this.insightsTimer = setTimeout(() => this.insightsLoading.set(false), 550);
   }
 
   openSubprodutoModal(sub: Subproduto): void {
@@ -259,14 +263,14 @@ export class MemoriaProdutoComponent {
     mobile: {
       stats: { total: 47, funcionaram: 23, naoFuncionaram: 14 },
       subprodutos: [
-        { nome: 'Pix & Transferências', icon: 'pi-send',       potencial: 'Alto',  temHipoteses: true,  descricao: 'Transferências instantâneas e pagamentos via chave Pix' },
-        { nome: 'Cartões',              icon: 'pi-credit-card', potencial: 'Alto',  temHipoteses: true,  descricao: 'Gestão e controle de cartões de crédito e débito' },
-        { nome: 'Investimentos',        icon: 'pi-chart-line',  potencial: 'Médio', temHipoteses: true,  descricao: 'Aplicações em renda fixa, fundos e bolsa de valores' },
-        { nome: 'Empréstimos',          icon: 'pi-wallet',      potencial: 'Médio', temHipoteses: true,  descricao: 'Crédito pessoal e simulações de financiamento' },
-        { nome: 'Seguros',              icon: 'pi-shield',      potencial: 'Médio', temHipoteses: false, descricao: 'Proteção patrimonial, cobertura de vida e acidentes' },
-        { nome: 'Câmbio',               icon: 'pi-globe',       potencial: 'Médio', temHipoteses: false, descricao: 'Compra e venda de moeda estrangeira e remessas' },
-        { nome: 'Consórcio',            icon: 'pi-users',       potencial: 'Baixo', temHipoteses: false, descricao: 'Compra programada de bens sem cobrança de juros' },
-        { nome: 'Crédito Imobiliário',  icon: 'pi-home',        potencial: 'Baixo', temHipoteses: false, descricao: 'Financiamento para compra e reforma de imóveis' },
+        { nome: 'Pix & Transferências', icon: 'pi-send',       potencial: 'Alto',  temHipoteses: true,  descricao: 'Transferências instantâneas e pagamentos via chave Pix', insightTemas: ['UX e Fluxos', 'Onboarding', 'Segurança e Privacidade'], metrics: ['conversao', 'sessoes', 'nps'] },
+        { nome: 'Cartões',              icon: 'pi-credit-card', potencial: 'Alto',  temHipoteses: true,  descricao: 'Gestão e controle de cartões de crédito e débito',       insightTemas: ['UX e Fluxos', 'Personalização', 'Segurança e Privacidade'], metrics: ['conversao', 'sessoes', 'nps', 'churn'] },
+        { nome: 'Investimentos',        icon: 'pi-chart-line',  potencial: 'Médio', temHipoteses: true,  descricao: 'Aplicações em renda fixa, fundos e bolsa de valores',    insightTemas: ['Personalização', 'Comunicação e Ofertas', 'Crédito e Ofertas'], metrics: ['faturamento', 'sessoes', 'nps'] },
+        { nome: 'Empréstimos',          icon: 'pi-wallet',      potencial: 'Médio', temHipoteses: true,  descricao: 'Crédito pessoal e simulações de financiamento',           insightTemas: ['Comunicação e Ofertas', 'Crédito e Ofertas', 'Personalização'], metrics: ['faturamento', 'conversao', 'nps'] },
+        { nome: 'Seguros',              icon: 'pi-shield',      potencial: 'Médio', temHipoteses: false, descricao: 'Proteção patrimonial, cobertura de vida e acidentes',     insightTemas: ['Comunicação e Ofertas', 'Crédito e Ofertas', 'Segurança e Privacidade'], metrics: ['faturamento', 'conversao'] },
+        { nome: 'Câmbio',               icon: 'pi-globe',       potencial: 'Médio', temHipoteses: false, descricao: 'Compra e venda de moeda estrangeira e remessas',          insightTemas: ['Personalização', 'Comunicação e Ofertas', 'Crédito e Ofertas'], metrics: ['faturamento', 'conversao'] },
+        { nome: 'Consórcio',            icon: 'pi-users',       potencial: 'Baixo', temHipoteses: false, descricao: 'Compra programada de bens sem cobrança de juros',         insightTemas: [], metrics: [] },
+        { nome: 'Crédito Imobiliário',  icon: 'pi-home',        potencial: 'Baixo', temHipoteses: false, descricao: 'Financiamento para compra e reforma de imóveis',          insightTemas: [], metrics: [] },
       ],
       hipoteses: [
         { titulo: 'Simplificar etapas de confirmação no fluxo PIX', racional: '3 experimentos mostram que cada etapa extra de confirmação reduz a conversão em ~8%. O fluxo atual tem 4 etapas; usuários de alta frequência esperam no máximo 2.', metricaAlvo: 'Conversão', impactoEstimado: '+18% a +24%', confianca: 'Alta', severity: 'success' },
@@ -391,20 +395,23 @@ export class MemoriaProdutoComponent {
         { tema: 'UX e Fluxos', icon: 'pi-arrows-h', resumo: 'Simplicidade é o maior alavancador de conversão. Cada etapa adicional em fluxos críticos representa perda mensurável e consistente.', pontos: ['Cada passo extra em fluxos de pagamento reduz a conversão em ~8%', 'Usuários de alta frequência toleram menos fricção do que novos usuários', 'Confirmações redundantes geram abandono sem aumentar percepção de segurança', 'Feedback visual imediato substitui a necessidade de etapas de "processando"'] },
         { tema: 'Comunicação e Ofertas', icon: 'pi-megaphone', resumo: 'Mensagens proativas sem contexto de uso geram rejeição. O momento certo importa mais do que a oferta certa.', pontos: ['Ofertas não contextuais reduzem NPS independente da relevância do produto', 'Notificações push em alto volume aumentam desinstalações em até 12%', 'Usuários aceitam ofertas quando estão no fluxo relacionado ao produto ofertado', 'Linguagem financeira técnica reduz engajamento em perfis de renda média'] },
         { tema: 'Personalização', icon: 'pi-user', resumo: 'Conteúdo adaptado ao comportamento histórico do usuário gera ganhos consistentes em retenção e engajamento.', pontos: ['Usuários com padrão de uso definido respondem melhor a layouts personalizados', 'O opt-in para personalização atingiu 67%, indicando alta receptividade', 'Segmentação por sofisticação financeira é essencial — estratégias únicas subperformam', 'Histórico de transações é melhor preditor de intenção do que dados demográficos'] },
+        { tema: 'Onboarding', icon: 'pi-book', resumo: 'Onboardings contextuais e progressivos têm conversão significativamente maior que tutoriais obrigatórios.', pontos: ['Tutoriais step-by-step interativos aumentam ativação em até 31% vs. telas estáticas', 'Usuários acima de 45 anos respondem especialmente bem ao formato guiado', 'Onboarding compulsório gera abandono; fluxos opcionais mantêm engajamento', 'Segmentar experiência por faixa etária e perfil de uso amplia o impacto'] },
+        { tema: 'Segurança e Privacidade', icon: 'pi-lock', resumo: 'Controles de privacidade sob demanda aumentam frequência de uso e percepção de confiança no app.', pontos: ['Saldo mascarado com toque para revelar aumentou frequência de abertura em 18%', '67% dos usuários optaram pelo widget de privacidade quando oferecido como opt-in', 'Privacidade como escolha do usuário gera mais engajamento do que restrições do sistema', 'Atalhos de segurança de 1 toque reduzem fricção sem comprometer percepção de proteção'] },
+        { tema: 'Crédito e Ofertas', icon: 'pi-wallet', resumo: 'Ofertas de crédito e serviços financeiros só convertem quando apresentadas no contexto certo de uso.', pontos: ['Ofertas proativas de crédito na home reduziram NPS em até 4 pontos', 'Contexto de uso é o principal determinante de receptividade — não o perfil do usuário', 'Ofertas pós-pagamento aprovado têm 3x mais receptividade que banners na home', 'Linguagem simples e direta supera jargão técnico em todos os perfis de renda'] },
       ],
     },
 
     ib: {
       stats: { total: 38, funcionaram: 18, naoFuncionaram: 11 },
       subprodutos: [
-        { nome: 'Investimentos',        icon: 'pi-chart-line', potencial: 'Alto',  temHipoteses: true,  descricao: 'Renda fixa, fundos e renda variável para pessoa física' },
-        { nome: 'Folha de Pagamento',   icon: 'pi-list',       potencial: 'Alto',  temHipoteses: true,  descricao: 'Processamento e gestão de salários e encargos' },
-        { nome: 'Câmbio',               icon: 'pi-globe',      potencial: 'Médio', temHipoteses: true,  descricao: 'Operações de câmbio e remessas internacionais' },
-        { nome: 'Crédito Empresarial',  icon: 'pi-wallet',     potencial: 'Médio', temHipoteses: true,  descricao: 'Linhas de crédito para capital de giro e expansão' },
-        { nome: 'Cobrança',             icon: 'pi-receipt',    potencial: 'Médio', temHipoteses: false, descricao: 'Emissão e gestão de boletos bancários' },
-        { nome: 'Trade Finance',        icon: 'pi-truck',      potencial: 'Médio', temHipoteses: false, descricao: 'Financiamento de operações de comércio exterior' },
-        { nome: 'Seguros Corporativos', icon: 'pi-shield',     potencial: 'Baixo', temHipoteses: false, descricao: 'Coberturas para ativos e operações da empresa' },
-        { nome: 'Conta Corrente',       icon: 'pi-building',   potencial: 'Baixo', temHipoteses: false, descricao: 'Movimentação e gestão da conta bancária' },
+        { nome: 'Investimentos',        icon: 'pi-chart-line', potencial: 'Alto',  temHipoteses: true,  descricao: 'Renda fixa, fundos e renda variável para pessoa física', insightTemas: ['Customização', 'Navegação', 'Relatórios e Dados'], metrics: ['faturamento', 'sessoes', 'nps'] },
+        { nome: 'Folha de Pagamento',   icon: 'pi-list',       potencial: 'Alto',  temHipoteses: true,  descricao: 'Processamento e gestão de salários e encargos',          insightTemas: ['Comunicação Proativa', 'Autenticação', 'Navegação'], metrics: ['faturamento', 'conversao'] },
+        { nome: 'Câmbio',               icon: 'pi-globe',      potencial: 'Médio', temHipoteses: true,  descricao: 'Operações de câmbio e remessas internacionais',           insightTemas: ['Comunicação Proativa', 'Produtos de Crédito', 'Relatórios e Dados'], metrics: ['faturamento', 'conversao'] },
+        { nome: 'Crédito Empresarial',  icon: 'pi-wallet',     potencial: 'Médio', temHipoteses: true,  descricao: 'Linhas de crédito para capital de giro e expansão',      insightTemas: ['Navegação', 'Produtos de Crédito', 'Autenticação'], metrics: ['faturamento', 'conversao', 'nps'] },
+        { nome: 'Cobrança',             icon: 'pi-receipt',    potencial: 'Médio', temHipoteses: false, descricao: 'Emissão e gestão de boletos bancários',                  insightTemas: ['Comunicação Proativa', 'Autenticação', 'Relatórios e Dados'], metrics: ['faturamento', 'conversao'] },
+        { nome: 'Trade Finance',        icon: 'pi-truck',      potencial: 'Médio', temHipoteses: false, descricao: 'Financiamento de operações de comércio exterior',         insightTemas: ['Navegação', 'Produtos de Crédito', 'Relatórios e Dados'], metrics: ['faturamento', 'conversao'] },
+        { nome: 'Seguros Corporativos', icon: 'pi-shield',     potencial: 'Baixo', temHipoteses: false, descricao: 'Coberturas para ativos e operações da empresa',           insightTemas: [], metrics: [] },
+        { nome: 'Conta Corrente',       icon: 'pi-building',   potencial: 'Baixo', temHipoteses: false, descricao: 'Movimentação e gestão da conta bancária',                insightTemas: ['Navegação', 'Customização', 'Autenticação'], metrics: ['sessoes', 'nps', 'churn'] },
       ],
       hipoteses: [
         { titulo: 'Reorganização do menu de navegação principal por frequência de uso', racional: 'Análise de heatmap mostra que 70% dos acessos se concentram em 4 funcionalidades. Reestruturar o menu pode reduzir o tempo médio para a primeira ação em até 40%.', metricaAlvo: 'Sessões', impactoEstimado: '+20% a +30%', confianca: 'Alta', severity: 'success' },
@@ -496,20 +503,23 @@ export class MemoriaProdutoComponent {
         { tema: 'Navegação', icon: 'pi-sitemap', resumo: 'Estrutura de menu clara e baseada em frequência de uso é crítica. Usuários de IB têm baixíssima tolerância para hierarquias profundas.', pontos: ['Menus com mais de 3 níveis de profundidade elevam o tempo médio por tarefa em 60%', 'Busca global é percebida como essencial por usuários com histórico superior a 6 meses', 'Atalhos configuráveis têm adoção menor que menus fixos bem estruturados', '70% dos acessos se concentram em 4 funcionalidades — o menu deve refletir isso'] },
         { tema: 'Comunicação Proativa', icon: 'pi-bell', resumo: 'Alertas com 3 ou mais dias de antecedência têm aceitação 3x maior que notificações no dia do evento.', pontos: ['Antecipação de eventos financeiros é percebida como cuidado, não intrusão', 'Alertas de débito automático reduzem acionamento de suporte em até 34%', 'E-mail tem maior taxa de leitura que push notification para avisos financeiros no IB', 'Frequência máxima aceitável: 2 notificações por semana para eventos não críticos'] },
         { tema: 'Customização', icon: 'pi-sliders-h', resumo: 'Interfaces altamente configuráveis têm menor adoção que experiências guiadas com boa ergonomia padrão.', pontos: ['Usuários que personalizam o dashboard retornam menos que o grupo controle', 'Customização aumenta carga cognitiva no primeiro acesso de forma significativa', 'Preferências salvas automaticamente pelo sistema superam configurações manuais', 'Ofereça 2-3 layouts pré-definidos antes de abrir para customização livre'] },
+        { tema: 'Autenticação', icon: 'pi-shield', resumo: 'Fricção no processo de autenticação é o principal driver de abandono em operações sensíveis do IB. Alternativas ágeis mantêm segurança sem prejudicar a conversão.', pontos: ['Autenticação por QR Code reduz tempo de acesso em 55% vs. token físico', 'Usuários com alta frequência de uso rejeitam reautenticação por sessão ativa', 'Biometria como segundo fator supera SMS OTP em satisfação e velocidade', 'Sessões persistentes para redes confiáveis reduzem fricção sem elevar risco percebido'] },
+        { tema: 'Relatórios e Dados', icon: 'pi-chart-bar', resumo: 'Acesso rápido a dados estruturados é a principal demanda de usuários IB de alta frequência. Exportação e filtros superam visualizações elaboradas em valor percebido.', pontos: ['Exportação de dados é o segundo motivo mais frequente de acesso ao IB', 'Filtros com presets rápidos (7d, 30d, 90d) eliminam 80% das interações com calendário', 'Dashboards de projeção interativa aumentam tempo de sessão em 35% entre usuários avançados', 'Relatórios agendados têm adoção 4x maior que downloads manuais para usuários corporativos'] },
+        { tema: 'Produtos de Crédito', icon: 'pi-wallet', resumo: 'Visibilidade proativa de limite e condições de crédito aumenta utilização e reduz dependência de atendimento humano para consultas rotineiras.', pontos: ['Indicador de limite em tempo real aumenta uso de crédito rotativo em 33%', 'Diferença de 24h na atualização de limite torna o indicador irrelevante para decisões diárias', 'Projeção de impacto no saldo antes da confirmação reduz desistências em operações de crédito', 'Alertas proativos de limite baixo superam consultas reativas em NPS por 11 pontos'] },
       ],
     },
 
     pj: {
       stats: { total: 29, funcionaram: 14, naoFuncionaram: 9 },
       subprodutos: [
-        { nome: 'Gestão de Pagamentos', icon: 'pi-receipt',    potencial: 'Alto',  temHipoteses: true,  descricao: 'Pagamento de fornecedores e contas em lote' },
-        { nome: 'Capital de Giro',      icon: 'pi-wallet',     potencial: 'Alto',  temHipoteses: true,  descricao: 'Crédito de curto prazo para operações diárias' },
-        { nome: 'Conta PJ',             icon: 'pi-building',   potencial: 'Alto',  temHipoteses: true,  descricao: 'Conta corrente e serviços bancários para empresas' },
-        { nome: 'Folha de Pagamento',   icon: 'pi-list',       potencial: 'Médio', temHipoteses: true,  descricao: 'Processamento de salários e encargos trabalhistas' },
-        { nome: 'Cobrança Digital',     icon: 'pi-tag',        potencial: 'Médio', temHipoteses: true,  descricao: 'Emissão de boletos e cobranças recorrentes' },
-        { nome: 'Câmbio',               icon: 'pi-globe',      potencial: 'Médio', temHipoteses: false, descricao: 'Câmbio e remessas para importação e exportação' },
-        { nome: 'Cartões PJ',           icon: 'pi-credit-card',potencial: 'Baixo', temHipoteses: false, descricao: 'Cartões corporativos para despesas da empresa' },
-        { nome: 'Investimentos PJ',     icon: 'pi-chart-line', potencial: 'Baixo', temHipoteses: false, descricao: 'Aplicações de curto e longo prazo para empresas' },
+        { nome: 'Gestão de Pagamentos', icon: 'pi-receipt',    potencial: 'Alto',  temHipoteses: true,  descricao: 'Pagamento de fornecedores e contas em lote',            insightTemas: ['Eficiência Operacional', 'Gestão de Caixa', 'Integração e APIs'], metrics: ['faturamento', 'conversao'] },
+        { nome: 'Capital de Giro',      icon: 'pi-wallet',     potencial: 'Alto',  temHipoteses: true,  descricao: 'Crédito de curto prazo para operações diárias',         insightTemas: ['Transparência de Dados', 'Gestão de Caixa', 'Eficiência Operacional'], metrics: ['faturamento', 'conversao', 'nps'] },
+        { nome: 'Conta PJ',             icon: 'pi-building',   potencial: 'Alto',  temHipoteses: true,  descricao: 'Conta corrente e serviços bancários para empresas',     insightTemas: ['Eficiência Operacional', 'Transparência de Dados', 'Onboarding Empresarial'], metrics: ['sessoes', 'nps', 'churn'] },
+        { nome: 'Folha de Pagamento',   icon: 'pi-list',       potencial: 'Médio', temHipoteses: true,  descricao: 'Processamento de salários e encargos trabalhistas',      insightTemas: ['Eficiência Operacional', 'Integração e APIs', 'Transparência de Dados'], metrics: ['faturamento', 'conversao'] },
+        { nome: 'Cobrança Digital',     icon: 'pi-tag',        potencial: 'Médio', temHipoteses: true,  descricao: 'Emissão de boletos e cobranças recorrentes',            insightTemas: ['Eficiência Operacional', 'Integração e APIs', 'Gestão de Caixa'], metrics: ['faturamento', 'conversao'] },
+        { nome: 'Câmbio',               icon: 'pi-globe',      potencial: 'Médio', temHipoteses: false, descricao: 'Câmbio e remessas para importação e exportação',        insightTemas: ['Transparência de Dados', 'Gestão de Caixa', 'Eficiência Operacional'], metrics: ['faturamento', 'conversao'] },
+        { nome: 'Cartões PJ',           icon: 'pi-credit-card',potencial: 'Baixo', temHipoteses: false, descricao: 'Cartões corporativos para despesas da empresa',          insightTemas: [], metrics: [] },
+        { nome: 'Investimentos PJ',     icon: 'pi-chart-line', potencial: 'Baixo', temHipoteses: false, descricao: 'Aplicações de curto e longo prazo para empresas',       insightTemas: ['Transparência de Dados', 'Automação e IA', 'Gestão de Caixa'], metrics: ['faturamento', 'sessoes'] },
       ],
       hipoteses: [
         { titulo: 'Fluxo de pagamento em lote com aprovação multinível configurável', racional: 'Empresas com mais de 3 operadores relatam gargalo no processo de aprovação. Um fluxo com aprovação hierárquica configurável pode aumentar o volume de transações mensais em até 35%.', metricaAlvo: 'Faturamento', impactoEstimado: '+25% a +35%', confianca: 'Alta', severity: 'success' },
@@ -601,20 +611,23 @@ export class MemoriaProdutoComponent {
         { tema: 'Eficiência Operacional', icon: 'pi-bolt', resumo: 'Fluxos de pagamento em lote são o maior driver de adoção PJ. Reduzir cliques em operações recorrentes tem o mais alto ROI entre todos os experimentos.', pontos: ['Pagamentos recorrentes para os mesmos fornecedores representam 65% do volume de operações', 'Cada minuto salvo em fluxos de pagamento se traduz em percepção de valor mensurável', 'Aprovação multinível é requisito não-negociável para empresas acima de 5 funcionários', 'Agendamento recorrente é subutilizado (8% de adoção) — ponto de oportunidade alto'] },
         { tema: 'Transparência de Dados', icon: 'pi-database', resumo: 'O usuário PJ consome dados brutos. Exportação fácil e confiável tem maior valor percebido do que visualizações elaboradas.', pontos: ['Exportação de extrato é o segundo motivo mais frequente de acesso ao sistema', 'Formato OFX tem adoção 3x maior que PDF para conciliação contábil', 'Dashboards visuais têm menor engajamento que tabelas de dados entre usuários PJ', 'Confiabilidade dos dados importa mais que velocidade de carregamento para este perfil'] },
         { tema: 'Automação e IA', icon: 'pi-microchip-ai', resumo: 'No contexto PJ, IA que erra é pior que ausência de automação. Precisão acima de 98% é requisito antes de qualquer lançamento em produção.', pontos: ['Erros de categorização geram retrabalho manual percebido como custo maior que o benefício', 'Sugestões de IA (não automáticas) têm melhor aceitação que automações silenciosas', 'Usuários PJ exigem rastreabilidade — toda ação automatizada precisa de log auditável', 'Automação deve começar em tarefas de baixo risco: formatação, agrupamento, notificações'] },
+        { tema: 'Gestão de Caixa', icon: 'pi-chart-line', resumo: 'Visibilidade do fluxo de caixa em tempo real é o principal driver de uso diário no IB PJ. Dados defasados eliminam o valor da ferramenta para decisões operacionais.', pontos: ['Indicadores de saldo e limite em tempo real aumentam acessos diários em 22%', 'Projeção de entradas e saídas nos próximos 7 dias reduz pedidos de crédito emergencial', 'Consolidação de múltiplos CNPJs em uma visão única elimina até 4 logins separados por sessão', 'Alertas de caixa crítico acionados pelo usuário têm 3x mais adoção que alertas automáticos'] },
+        { tema: 'Integração e APIs', icon: 'pi-code', resumo: 'Empresas com ERPs ativos exigem integração como requisito, não como diferencial. Fricção na conexão com sistemas externos é o maior barrier de adoção em segmentos médios.', pontos: ['61% dos chamados ao suporte para extrato são eliminados com exportação direta no formato certo', 'Integração via API tem adoção 4x maior que exportação manual entre empresas com >20 funcionários', 'OFX parametrizável por categoria supera PDF como formato preferido para conciliação contábil', 'Documentação de API com exemplos práticos reduz tempo de integração de semanas para dias'] },
+        { tema: 'Onboarding Empresarial', icon: 'pi-building', resumo: 'Operadores PJ rejeitam tutoriais lineares e preferem documentação consultável. O padrão de uso não-sequencial exige onboarding contextual e por funcionalidade.', pontos: ['Tutorial obrigatório em vídeo gerou 18% de abandono imediato no primeiro acesso', 'Tooltips contextuais no primeiro uso de cada seção têm 3x mais conclusão que tutoriais lineares', 'Base de conhecimento pesquisável é mais valorizada que qualquer formato de onboarding guiado', 'Sandbox de treino separado do ambiente real é o principal diferencial para onboarding de novos operadores'] },
       ],
     },
 
     cards: {
       stats: { total: 43, funcionaram: 21, naoFuncionaram: 13 },
       subprodutos: [
-        { nome: 'Cartão de Crédito',      icon: 'pi-credit-card', potencial: 'Alto',  temHipoteses: true,  descricao: 'Compras nacionais e internacionais com parcelamento' },
-        { nome: 'Programa de Pontos',      icon: 'pi-star',        potencial: 'Alto',  temHipoteses: true,  descricao: 'Acúmulo e resgate de pontos por gastos realizados' },
-        { nome: 'Cartão Virtual',          icon: 'pi-mobile',      potencial: 'Alto',  temHipoteses: true,  descricao: 'Número temporário para compras online com segurança' },
-        { nome: 'Crédito Rotativo',        icon: 'pi-chart-bar',   potencial: 'Médio', temHipoteses: true,  descricao: 'Crédito automático para pagamento mínimo da fatura' },
-        { nome: 'Seguros de Cartão',       icon: 'pi-shield',      potencial: 'Médio', temHipoteses: true,  descricao: 'Proteção contra fraudes e perda do cartão' },
-        { nome: 'Antecipação de Parcelas', icon: 'pi-calendar',    potencial: 'Médio', temHipoteses: false, descricao: 'Quitação antecipada de compras parceladas' },
-        { nome: 'Cartão Pré-pago',         icon: 'pi-wallet',      potencial: 'Baixo', temHipoteses: false, descricao: 'Cartão recarregável sem necessidade de conta bancária' },
-        { nome: 'Cashback',                icon: 'pi-sync',        potencial: 'Baixo', temHipoteses: false, descricao: 'Devolução de percentual sobre as compras realizadas' },
+        { nome: 'Cartão de Crédito',      icon: 'pi-credit-card', potencial: 'Alto',  temHipoteses: true,  descricao: 'Compras nacionais e internacionais com parcelamento',    insightTemas: ['Gestão de Gastos', 'Engajamento e Retenção', 'Fluxo de Contestação'], metrics: ['faturamento', 'sessoes', 'nps', 'churn'] },
+        { nome: 'Programa de Pontos',      icon: 'pi-star',        potencial: 'Alto',  temHipoteses: true,  descricao: 'Acúmulo e resgate de pontos por gastos realizados',      insightTemas: ['Engajamento e Retenção', 'Produtos e Benefícios', 'Comunicação de Fatura'], metrics: ['sessoes', 'nps', 'churn'] },
+        { nome: 'Cartão Virtual',          icon: 'pi-mobile',      potencial: 'Alto',  temHipoteses: true,  descricao: 'Número temporário para compras online com segurança',    insightTemas: ['Gestão de Gastos', 'Segurança do Cartão', 'Produtos e Benefícios'], metrics: ['sessoes', 'conversao'] },
+        { nome: 'Crédito Rotativo',        icon: 'pi-chart-bar',   potencial: 'Médio', temHipoteses: true,  descricao: 'Crédito automático para pagamento mínimo da fatura',     insightTemas: ['Comunicação de Fatura', 'Gestão de Gastos', 'Produtos e Benefícios'], metrics: ['faturamento', 'conversao', 'nps'] },
+        { nome: 'Seguros de Cartão',       icon: 'pi-shield',      potencial: 'Médio', temHipoteses: true,  descricao: 'Proteção contra fraudes e perda do cartão',              insightTemas: ['Engajamento e Retenção', 'Segurança do Cartão', 'Produtos e Benefícios'], metrics: ['faturamento', 'conversao', 'nps'] },
+        { nome: 'Antecipação de Parcelas', icon: 'pi-calendar',    potencial: 'Médio', temHipoteses: false, descricao: 'Quitação antecipada de compras parceladas',              insightTemas: ['Comunicação de Fatura', 'Gestão de Gastos', 'Fluxo de Contestação'], metrics: ['faturamento', 'conversao'] },
+        { nome: 'Cartão Pré-pago',         icon: 'pi-wallet',      potencial: 'Baixo', temHipoteses: false, descricao: 'Cartão recarregável sem necessidade de conta bancária',  insightTemas: [], metrics: [] },
+        { nome: 'Cashback',                icon: 'pi-sync',        potencial: 'Baixo', temHipoteses: false, descricao: 'Devolução de percentual sobre as compras realizadas',    insightTemas: ['Engajamento e Retenção', 'Produtos e Benefícios', 'Gestão de Gastos'], metrics: ['faturamento', 'churn'] },
       ],
       hipoteses: [
         { titulo: 'Visualização de gastos por categoria com alertas de orçamento', racional: '2 experimentos com categorização visual mostraram aumento de 29% nas sessões. Adicionar alertas de orçamento configuráveis deve ampliar o engajamento e a percepção de controle financeiro.', metricaAlvo: 'Sessões', impactoEstimado: '+15% a +22%', confianca: 'Alta', severity: 'success' },
@@ -737,8 +750,18 @@ export class MemoriaProdutoComponent {
         { tema: 'Gestão de Gastos', icon: 'pi-chart-pie', resumo: 'Visualizações simples de categorias de gasto aumentam engajamento de forma consistente. O usuário quer entender para onde vai o dinheiro, não administrar planilhas.', pontos: ['Categorização visual aumenta frequência de acesso ao app em até 29%', 'Usuários que acompanham categorias têm LTV 31% maior em média', 'Alertas de orçamento devem ser configuráveis — limites impostos geram rejeição', 'Nível máximo útil de granularidade é 2 níveis de categoria para o perfil médio'] },
         { tema: 'Comunicação de Fatura', icon: 'pi-receipt', resumo: 'Notificações de fatura com antecedência e contexto reduzem inadimplência e aumentam NPS simultaneamente. O timing importa mais que o conteúdo.', pontos: ['Alertas com 5+ dias antes do vencimento têm taxa de pagamento integral 22% maior', 'Resumo de gastos junto ao alerta de fatura aumenta pagamento total em 12%', 'Notificação no dia do vencimento é percebida como cobrança, não como lembrete', 'Push notification supera e-mail para alertas de fatura em taxa de abertura (68% vs 31%)'] },
         { tema: 'Engajamento e Retenção', icon: 'pi-star', resumo: 'Contextos financeiros pessoais rejeitam comparação social. Gamificação deve ser individual, privada e baseada em progresso do próprio usuário.', pontos: ['Rankings públicos financeiros geram rejeição e redução de NPS consistentemente', 'Metas de cashback personalizadas têm 3x mais adoção que programas de pontos genéricos', 'Atalhos de segurança (bloqueio rápido) aumentam NPS sem custo operacional', 'Usuários com atalhos customizados na home têm churn 18% menor'] },
+        { tema: 'Segurança do Cartão', icon: 'pi-shield', resumo: 'Controles de segurança acessíveis em 1 toque aumentam NPS e uso preventivo sem elevar o volume de incidentes reais. A percepção de controle é o produto.', pontos: ['Atalho de bloqueio na home aumentou uso preventivo do cartão em 140%', 'Toggle on/off imediato supera modal de confirmação em NPS e taxa de uso', 'Usuários que bloqueiam preventivamente têm NPS 9 pontos acima da média', 'Limite para uso online como controle separado é a funcionalidade de segurança mais solicitada'] },
+        { tema: 'Produtos e Benefícios', icon: 'pi-tag', resumo: 'Benefícios são mais valorizados quando visíveis e contextuais. Programas opacos ou com muitas regras geram percepção negativa mesmo entre usuários ativos.', pontos: ['Cashback direto tem 3x mais adoção que programas de pontos com regras complexas', 'Benefícios visíveis no momento da compra aumentam percepção de valor em 28%', 'Seguros de cartão com oferta contextual têm conversão 4x maior que banners estáticos', 'Usuários que conhecem pelo menos 3 benefícios do cartão têm churn 22% menor'] },
+        { tema: 'Fluxo de Contestação', icon: 'pi-file-edit', resumo: 'Contestações mal resolvidas são o principal driver de churn em cartões. Simplificação do fluxo e rastreabilidade em tempo real eliminam o problema antes do SAC.', pontos: ['Reduzir contestação de 8 para 3 etapas aumentou taxa de conclusão em 52%', 'Status em tempo real elimina 44% dos chamados ao SAC sobre contestações em andamento', 'Previsão de prazo de resolução exibida no app reduz recontatos em até 38%', 'Contestação por foto integrada ao extrato é o próximo diferencial de maior impacto estimado'] },
       ],
     },
+  };
+
+  private readonly productMetrics: Record<string, string[]> = {
+    mobile: ['faturamento', 'conversao', 'sessoes', 'nps', 'churn'],
+    ib:     ['sessoes', 'nps', 'conversao', 'faturamento'],
+    pj:     ['faturamento', 'conversao', 'nps', 'sessoes'],
+    cards:  ['faturamento', 'sessoes', 'nps', 'conversao', 'churn'],
   };
 
   stats          = computed(() => this.productData[this.productService.selected().id].stats);
@@ -747,17 +770,24 @@ export class MemoriaProdutoComponent {
     return [...list].sort((a, b) => Number(b.temHipoteses) - Number(a.temHipoteses));
   });
   hipoteses      = computed(() => this.productData[this.productService.selected().id].hipoteses);
-  funcionaram    = computed(() => {
-    const list = this.productData[this.productService.selected().id].funcionaram;
-    const sub  = this.selectedSubproduto();
-    return sub ? list.filter(e => this.matchesSubproduto(e, sub)) : list;
+  funcionaram    = computed(() => this.productData[this.productService.selected().id].funcionaram);
+  naoFuncionaram = computed(() => this.productData[this.productService.selected().id].naoFuncionaram);
+  explorarMetrics = computed(() => {
+    const productId = this.productService.selected().id;
+    const sub = this.selectedSubproduto();
+    const ids = (sub && sub.metrics.length > 0)
+      ? sub.metrics
+      : (this.productMetrics[productId] ?? []);
+    return this.metricService.metrics.filter(m => ids.includes(m.id));
   });
-  naoFuncionaram = computed(() => {
-    const list = this.productData[this.productService.selected().id].naoFuncionaram;
-    const sub  = this.selectedSubproduto();
-    return sub ? list.filter(e => this.matchesSubproduto(e, sub)) : list;
+
+  insightAreas   = computed(() => {
+    const all = this.productData[this.productService.selected().id].insightAreas;
+    const sub = this.selectedSubproduto();
+    if (!sub || sub.insightTemas.length === 0) return all;
+    const filtered = all.filter(a => sub.insightTemas.includes(a.tema));
+    return filtered.length > 0 ? filtered : all;
   });
-  insightAreas   = computed(() => this.productData[this.productService.selected().id].insightAreas);
 
   readonly subCarouselOptions = [
     { breakpoint: '1100px', numVisible: 4, numScroll: 2 },
@@ -767,5 +797,16 @@ export class MemoriaProdutoComponent {
 
   potencialSeverity(p: 'Alto' | 'Médio' | 'Baixo'): 'success' | 'warn' | 'danger' {
     return p === 'Alto' ? 'success' : p === 'Médio' ? 'warn' : 'danger';
+  }
+
+  metricIcon(category: string): string {
+    const map: Record<string, string> = {
+      'Financeira':   'pi-dollar',
+      'Conversão':    'pi-chart-bar',
+      'Engajamento':  'pi-users',
+      'Satisfação':   'pi-star',
+      'Retenção':     'pi-heart',
+    };
+    return map[category] ?? 'pi-chart-line';
   }
 }
