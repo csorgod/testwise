@@ -7,46 +7,56 @@
       <p class="page-subtitle">{{ productService.selected().name }} — histórico e status dos testes</p>
     </div>
 
-    <div class="page-controls">
-      <div class="selectors-row">
-        <span class="selector-label">Produto</span>
+    <div class="page-right">
+      <div class="page-controls">
+        <div class="selectors-row">
+          <span class="selector-label">Produto</span>
+          <p-select
+            [options]="productService.products"
+            [ngModel]="productService.selected()"
+            (ngModelChange)="productService.select($event)"
+            optionLabel="name"
+            [style]="{ minWidth: '160px' }"
+          />
+        </div>
+
         <p-select
-          [options]="productService.products"
-          [ngModel]="productService.selected()"
-          (ngModelChange)="productService.select($event)"
-          optionLabel="name"
-          [style]="{ minWidth: '160px' }"
+          [options]="statusOptions"
+          [ngModel]="selectedStatus()"
+          (ngModelChange)="selectedStatus.set($event)"
+          optionLabel="label"
+          optionValue="value"
+          [style]="{ width: '170px' }"
         />
+
+        <p-select
+          [options]="resultadoOptions"
+          [ngModel]="selectedResultado()"
+          (ngModelChange)="selectedResultado.set($event)"
+          optionLabel="label"
+          optionValue="value"
+          [style]="{ width: '185px' }"
+        />
+
+        <p-iconfield>
+          <p-inputicon class="pi pi-search" />
+          <input
+            pInputText
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event)"
+            placeholder="Buscar experimento..."
+            class="search-input"
+          />
+        </p-iconfield>
       </div>
 
-      <p-select
-        [options]="statusOptions"
-        [ngModel]="selectedStatus()"
-        (ngModelChange)="selectedStatus.set($event)"
-        optionLabel="label"
-        optionValue="value"
-        [style]="{ width: '170px' }"
-      />
-
-      <p-select
-        [options]="resultadoOptions"
-        [ngModel]="selectedResultado()"
-        (ngModelChange)="selectedResultado.set($event)"
-        optionLabel="label"
-        optionValue="value"
-        [style]="{ width: '185px' }"
-      />
-
-      <p-iconfield>
-        <p-inputicon class="pi pi-search" />
-        <input
-          pInputText
-          [ngModel]="searchQuery()"
-          (ngModelChange)="searchQuery.set($event)"
-          placeholder="Buscar experimento..."
-          class="search-input"
+      <div class="action-bar">
+        <p-button
+          label="Criar Experimento"
+          icon="pi pi-plus"
+          routerLink="/criar-experimento"
         />
-      </p-iconfield>
+      </div>
     </div>
   </div>
 
@@ -58,8 +68,13 @@
           <span class="kpi-label">{{ kpi.label }}</span>
           @if (loading()) {
             <p-skeleton height="2rem" borderRadius="6px" class="kpi-skel-value" />
+            <p-skeleton height="0.75rem" width="85%" borderRadius="4px" class="kpi-skel-trend" />
           } @else {
             <span class="kpi-value">{{ kpi.value }}</span>
+            <span class="kpi-trend" [class.positive]="kpi.positive" [class.negative]="!kpi.positive">
+              <i class="pi" [class.pi-arrow-up-right]="kpi.positive" [class.pi-arrow-down-right]="!kpi.positive"></i>
+              {{ kpi.trend }}
+            </span>
           }
         </div>
         <div class="kpi-icon-wrap" [class.dimmed]="loading()">

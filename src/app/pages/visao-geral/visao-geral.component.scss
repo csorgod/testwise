@@ -335,14 +335,24 @@
   flex: 1;
 }
 
+.insight-bottom-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-top: 0.625rem;
+  border-top: 1px solid #f3f4f6;
+  margin-top: auto;
+}
+
 .insight-footer {
   display: flex;
   align-items: center;
   gap: 0.375rem;
-  padding-top: 0.625rem;
-  border-top: 1px solid #f3f4f6;
   font-size: 0.75rem;
   color: #9ca3af;
+  min-width: 0;
 
-  i { color: var(--itau-blue); font-size: 0.75rem; }
+  span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  i { color: var(--itau-blue); font-size: 0.75rem; flex-shrink: 0; }
 }

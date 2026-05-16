@@ -1,5 +1,6 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { Tag } from 'primeng/tag';
 import { ButtonModule } from 'primeng/button';
 import { SelectModule } from 'primeng/select';
@@ -29,7 +30,7 @@ interface Experimento {
 
 @Component({
   selector: 'app-experimentos',
-  imports: [FormsModule, Tag, ButtonModule, SelectModule, SkeletonModule, InputTextModule, IconField, InputIcon, PaginatorModule],
+  imports: [FormsModule, RouterLink, Tag, ButtonModule, SelectModule, SkeletonModule, InputTextModule, IconField, InputIcon, PaginatorModule],
   templateUrl: './experimentos.component.html',
   styleUrl: './experimentos.component.scss',
 })
@@ -116,10 +117,10 @@ export class ExperimentosComponent {
     const vencedores  = list.filter(e => e.resultado === 'Vencedor').length;
     const taxa = concluidos > 0 ? Math.round((vencedores / concluidos) * 100) : 0;
     return [
-      { label: 'Total',          value: String(list.length),   icon: 'pi-chart-scatter', accent: 'blue'   },
-      { label: 'Em andamento',   value: String(emAndamento),   icon: 'pi-play-circle',   accent: 'orange' },
-      { label: 'Concluídos',     value: String(concluidos),    icon: 'pi-check-circle',  accent: 'green'  },
-      { label: 'Taxa de sucesso',value: `${taxa}%`,            icon: 'pi-trophy',        accent: 'yellow' },
+      { label: 'Experimentos Totais',    value: String(list.length), icon: 'pi-chart-scatter', accent: 'blue',   trend: '+5 vs. mês anterior',   positive: true  },
+      { label: 'Experimentos Ativos',    value: String(emAndamento), icon: 'pi-play-circle',   accent: 'orange', trend: '+2 vs. mês anterior',  positive: true  },
+      { label: 'Experimentos Concluídos',value: String(concluidos),  icon: 'pi-check-circle',  accent: 'green',  trend: '+3 este mês',            positive: true  },
+      { label: 'Taxa de sucesso',        value: `${taxa}%`,          icon: 'pi-trophy',        accent: 'yellow', trend: taxa >= 50 ? `+${Math.max(1, taxa - 50)} pts vs. mês ant.` : `-${50 - taxa} pts vs. mês ant.`, positive: taxa >= 50 },
     ];
   });
 

@@ -16,4 +16,9 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/experimentos/experimentos.component').then(m => m.ExperimentosComponent),
   },
+  {
+    path: 'criar-experimento',
+    loadComponent: () =>
+      import('./pages/criar-experimento/criar-experimento.component').then(m => m.CriarExperimentoComponent),
+  },
 ];

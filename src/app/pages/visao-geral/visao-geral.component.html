@@ -92,7 +92,7 @@
   <div class="chart-card opportunity-chart-card">
     <div class="chart-card-header">
       <div class="chart-title-group">
-        <span class="chart-title">Custo da Oportunidade Salva</span>
+        <span class="chart-title">Oportunidade protegida</span>
         <span class="chart-subtitle">
           Quanto de <strong>{{ metricName() }}</strong> foi protegido ao descartar variações perdedoras
         </span>
@@ -136,9 +136,20 @@
           <h3 class="insight-title">{{ insight.title }}</h3>
           <p class="insight-desc">{{ insight.description }}</p>
 
-          <div class="insight-footer">
-            <i class="pi pi-flask"></i>
-            <span>{{ insight.experiment }}</span>
+          <div class="insight-bottom-row">
+            <div class="insight-footer">
+              <i class="pi pi-flask"></i>
+              <span>{{ insight.experiment }}</span>
+            </div>
+            <p-button
+              label="Saiba mais"
+              icon="pi pi-arrow-right"
+              iconPos="right"
+              size="small"
+              [text]="true"
+              severity="info"
+              routerLink="/memoria-produto"
+            />
           </div>
         </div>
       }

@@ -1,9 +1,11 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { ChartModule } from 'primeng/chart';
 import { TagModule } from 'primeng/tag';
 import { SkeletonModule } from 'primeng/skeleton';
 import { SelectModule } from 'primeng/select';
+import { ButtonModule } from 'primeng/button';
 import { ProductService } from '../../core/product.service';
 import { MetricService } from '../../core/metric.service';
 
@@ -55,7 +57,7 @@ type OpportunityMap = Record<string, Record<string, OpportunitySavedConfig>>;
 
 @Component({
   selector: 'app-visao-geral',
-  imports: [FormsModule, ChartModule, TagModule, SkeletonModule, SelectModule],
+  imports: [FormsModule, RouterLink, ChartModule, TagModule, SkeletonModule, SelectModule, ButtonModule],
   templateUrl: './visao-geral.component.html',
   styleUrl: './visao-geral.component.scss',
 })
@@ -205,7 +207,7 @@ export class VisaoGeralComponent {
                           [this.metricService.selected().id]
                           [this.selectedPeriodo()];
     return [
-      { label: 'Experimentos Ativos', value: d.experimentos, trend: d.expTrend,  positive: !d.expTrend.startsWith('estável'), icon: 'pi-flask',        accent: 'orange' },
+      { label: 'Experimentos Ativos', value: d.experimentos, trend: d.expTrend,  positive: !d.expTrend.startsWith('estável'), icon: 'pi-sync',        accent: 'orange' },
       { label: 'Taxa de Sucesso',     value: d.taxaSucesso,  trend: d.taxaTrend, positive: true,                              icon: 'pi-chart-bar',    accent: 'blue'   },
       { label: 'Hipóteses Testadas',  value: d.hipoteses,    trend: d.hipTrend,  positive: true,                              icon: 'pi-check-circle', accent: 'green'  },
       { label: 'Impacto Estimado',    value: d.impacto,      trend: d.impTrend,  positive: true,                              icon: 'pi-wallet',       accent: 'yellow' },

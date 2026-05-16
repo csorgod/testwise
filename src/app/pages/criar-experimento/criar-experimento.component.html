@@ -1,0 +1,344 @@
+<div class="criar-exp">
+
+  <!-- ── Page header ─────────────────────────────────────── -->
+  <div class="page-header">
+    <div class="page-header-left">
+      <p-button
+        icon="pi pi-arrow-left"
+        [text]="true"
+        severity="secondary"
+        (click)="goBack()"
+        pTooltip="Voltar"
+        tooltipPosition="right"
+      />
+      <div>
+        <h1 class="page-title">Criar Experimento</h1>
+        <p class="page-subtitle">Configure um novo teste A/B para validar sua hipótese</p>
+      </div>
+    </div>
+
+    <div class="page-header-actions">
+      <p-button label="Cancelar" severity="secondary" [text]="true" (click)="goBack()" />
+      <p-button
+        label="Salvar experimento"
+        icon="pi pi-check"
+        [loading]="saving()"
+        [disabled]="!formValid"
+        (click)="salvar()"
+      />
+    </div>
+  </div>
+
+  <div class="form-layout">
+
+    <!-- ── LEFT COLUMN ─────────────────────────────────────── -->
+    <div class="form-col form-col-main">
+
+      <!-- Section: Identificação -->
+      <div class="form-card">
+        <div class="form-card-header">
+          <div class="section-icon section-icon--blue"><i class="pi pi-tag"></i></div>
+          <div>
+            <h2 class="section-title">Identificação</h2>
+            <p class="section-subtitle">Informações básicas do experimento</p>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-field form-field--full">
+            <label class="form-label">Nome do experimento <span class="required">*</span></label>
+            <input pInputText [(ngModel)]="nome" placeholder="Ex: Novo fluxo de confirmação PIX" class="form-input" />
+          </div>
+
+          <div class="form-field form-field--full">
+            <label class="form-label">Hipótese <span class="required">*</span></label>
+            <textarea
+              pTextarea
+              [(ngModel)]="hipotese"
+              placeholder="Se [mudança], então [resultado esperado], porque [justificativa]..."
+              rows="3"
+              class="form-input"
+              autoResize="false"
+            ></textarea>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">Área <span class="required">*</span></label>
+            <p-select
+              [options]="areaOptions"
+              [(ngModel)]="area"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Selecionar área"
+              [style]="{ width: '100%' }"
+            />
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">Produto</label>
+            <p-select
+              [options]="productService.products"
+              [ngModel]="productService.selected()"
+              (ngModelChange)="productService.select($event)"
+              optionLabel="name"
+              [style]="{ width: '100%' }"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Variantes A/B -->
+      <div class="form-card">
+        <div class="form-card-header">
+          <div class="section-icon section-icon--orange"><i class="pi pi-copy"></i></div>
+          <div>
+            <h2 class="section-title">Variantes A/B</h2>
+            <p class="section-subtitle">Defina controle e variante do teste</p>
+          </div>
+        </div>
+
+        <!-- Traffic split -->
+        <div class="traffic-split-section">
+          <div class="traffic-labels">
+            <span class="traffic-label traffic-label--a">A — {{ trafficA }}%</span>
+            <span class="traffic-label traffic-label--b">B — {{ trafficB }}%</span>
+          </div>
+          <div class="traffic-bar">
+            <div class="traffic-bar-a" [style.width.%]="trafficA"></div>
+            <div class="traffic-bar-b" [style.width.%]="trafficB"></div>
+          </div>
+          <p-slider [(ngModel)]="trafficSplit" [min]="10" [max]="90" [step]="5" styleClass="traffic-slider" />
+          <p class="traffic-hint">Arraste para ajustar a divisão de tráfego entre as variantes</p>
+        </div>
+
+        <div class="variantes-grid">
+          <!-- Controle A -->
+          <div class="variante-card variante-card--a">
+            <div class="variante-header">
+              <span class="variante-badge variante-badge--a">A</span>
+              <span class="variante-type">Controle</span>
+              <span class="variante-traffic">{{ trafficA }}% do tráfego</span>
+            </div>
+            <div class="form-field">
+              <label class="form-label">Nome da variante</label>
+              <input pInputText [(ngModel)]="controleNome" class="form-input" />
+            </div>
+            <div class="form-field">
+              <label class="form-label">Descrição <span class="required">*</span></label>
+              <textarea
+                pTextarea
+                [(ngModel)]="controleDescricao"
+                placeholder="Descreva o comportamento atual (sem mudanças)..."
+                rows="3"
+                class="form-input"
+                autoResize="false"
+              ></textarea>
+            </div>
+          </div>
+
+          <!-- Variante B -->
+          <div class="variante-card variante-card--b">
+            <div class="variante-header">
+              <span class="variante-badge variante-badge--b">B</span>
+              <span class="variante-type">Variante</span>
+              <span class="variante-traffic">{{ trafficB }}% do tráfego</span>
+            </div>
+            <div class="form-field">
+              <label class="form-label">Nome da variante</label>
+              <input pInputText [(ngModel)]="varianteNome" class="form-input" />
+            </div>
+            <div class="form-field">
+              <label class="form-label">Descrição <span class="required">*</span></label>
+              <textarea
+                pTextarea
+                [(ngModel)]="varianteDescricao"
+                placeholder="Descreva a mudança que será testada..."
+                rows="3"
+                class="form-input"
+                autoResize="false"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Métricas e Impacto -->
+      <div class="form-card">
+        <div class="form-card-header">
+          <div class="section-icon section-icon--green"><i class="pi pi-chart-bar"></i></div>
+          <div>
+            <h2 class="section-title">Métricas e Impacto</h2>
+            <p class="section-subtitle">Defina o que será medido e os critérios de sucesso</p>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-field form-field--full">
+            <label class="form-label">Métrica principal <span class="required">*</span></label>
+            <p-select
+              [options]="metricaOptions"
+              [(ngModel)]="metricaPrincipal"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Selecionar métrica"
+              [style]="{ width: '100%' }"
+            />
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">Nível de confiança <span class="required">*</span></label>
+            <p-select
+              [options]="confiancaOptions"
+              [(ngModel)]="confianca"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Selecionar"
+              [style]="{ width: '100%' }"
+            />
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">Impacto mínimo esperado (%)</label>
+            <p-inputnumber
+              [(ngModel)]="impactoMinimo"
+              placeholder="Ex: 5"
+              [min]="0.1"
+              [max]="100"
+              [minFractionDigits]="1"
+              [maxFractionDigits]="1"
+              suffix="%"
+              [style]="{ width: '100%' }"
+              inputStyleClass="form-input"
+            />
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── RIGHT COLUMN ────────────────────────────────────── -->
+    <div class="form-col form-col-side">
+
+      <!-- Section: Cronograma -->
+      <div class="form-card">
+        <div class="form-card-header">
+          <div class="section-icon section-icon--yellow"><i class="pi pi-calendar"></i></div>
+          <div>
+            <h2 class="section-title">Cronograma</h2>
+            <p class="section-subtitle">Planejamento temporal do experimento</p>
+          </div>
+        </div>
+
+        <div class="form-grid form-grid--single">
+          <div class="form-field form-field--full">
+            <label class="form-label">Data de início</label>
+            <p-datepicker
+              [(ngModel)]="dataInicio"
+              dateFormat="dd/mm/yy"
+              placeholder="Selecionar data"
+              [showIcon]="true"
+              [style]="{ width: '100%' }"
+            />
+          </div>
+
+          <div class="form-field form-field--full">
+            <label class="form-label">Duração estimada (dias)</label>
+            <p-inputnumber
+              [(ngModel)]="duracaoDias"
+              [min]="1"
+              [max]="365"
+              [style]="{ width: '100%' }"
+              inputStyleClass="form-input"
+              suffix=" dias"
+            />
+          </div>
+
+          <div class="form-field form-field--full">
+            <label class="form-label">% da audiência</label>
+            <p-inputnumber
+              [(ngModel)]="audienciaPercent"
+              [min]="1"
+              [max]="100"
+              [style]="{ width: '100%' }"
+              inputStyleClass="form-input"
+              suffix="%"
+            />
+            <span class="form-hint">Porcentagem de usuários elegíveis que entrarão no experimento</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Segmentação -->
+      <div class="form-card">
+        <div class="form-card-header">
+          <div class="section-icon section-icon--purple"><i class="pi pi-users"></i></div>
+          <div>
+            <h2 class="section-title">Segmentação</h2>
+            <p class="section-subtitle">Onde o experimento será exibido</p>
+          </div>
+        </div>
+
+        <div class="form-grid form-grid--single">
+          <div class="form-field form-field--full">
+            <label class="form-label">Plataformas</label>
+            <p-multiselect
+              [options]="plataformaOptions"
+              [(ngModel)]="plataformas"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Selecionar plataformas"
+              display="chip"
+              [style]="{ width: '100%' }"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Detalhes adicionais -->
+      <div class="form-card">
+        <div class="form-card-header">
+          <div class="section-icon section-icon--gray"><i class="pi pi-info-circle"></i></div>
+          <div>
+            <h2 class="section-title">Detalhes adicionais</h2>
+            <p class="section-subtitle">Informações complementares</p>
+          </div>
+        </div>
+
+        <div class="form-grid form-grid--single">
+          <div class="form-field form-field--full">
+            <label class="form-label">Responsável</label>
+            <input pInputText [(ngModel)]="responsavel" placeholder="Nome do responsável" class="form-input" />
+          </div>
+
+          <div class="form-field form-field--full">
+            <label class="form-label">Observações</label>
+            <textarea
+              pTextarea
+              [(ngModel)]="observacoes"
+              placeholder="Contexto adicional, links, referências..."
+              rows="4"
+              class="form-input"
+              autoResize="false"
+            ></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Checklist summary -->
+      <div class="checklist-card">
+        <h3 class="checklist-title">Progresso do formulário</h3>
+        <ul class="checklist">
+          <li [class.done]="nome.trim()"><i class="pi" [class.pi-check-circle]="nome.trim()" [class.pi-circle]="!nome.trim()"></i> Nome do experimento</li>
+          <li [class.done]="hipotese.trim()"><i class="pi" [class.pi-check-circle]="hipotese.trim()" [class.pi-circle]="!hipotese.trim()"></i> Hipótese</li>
+          <li [class.done]="area"><i class="pi" [class.pi-check-circle]="area" [class.pi-circle]="!area"></i> Área</li>
+          <li [class.done]="controleDescricao.trim()"><i class="pi" [class.pi-check-circle]="controleDescricao.trim()" [class.pi-circle]="!controleDescricao.trim()"></i> Descrição do controle (A)</li>
+          <li [class.done]="varianteDescricao.trim()"><i class="pi" [class.pi-check-circle]="varianteDescricao.trim()" [class.pi-circle]="!varianteDescricao.trim()"></i> Descrição da variante (B)</li>
+          <li [class.done]="metricaPrincipal"><i class="pi" [class.pi-check-circle]="metricaPrincipal" [class.pi-circle]="!metricaPrincipal"></i> Métrica principal</li>
+          <li [class.done]="confianca"><i class="pi" [class.pi-check-circle]="confianca" [class.pi-circle]="!confianca"></i> Nível de confiança</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+</div>

@@ -16,6 +16,21 @@
 
 .page-title-group { flex: 1; min-width: 0; }
 
+.page-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.action-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
 .page-title {
   font-size: 1.6rem;
   font-weight: 700;
@@ -148,6 +163,20 @@
 }
 
 .kpi-skel-value { display: block; }
+.kpi-skel-trend { display: block; margin-top: 0.25rem; }
+
+.kpi-trend {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+
+  &.positive { color: #16a34a; }
+  &.negative { color: #ef4444; }
+
+  i { font-size: 0.7rem; }
+}
 
 // ── List section ──────────────────────────────────────────
 .list-section {

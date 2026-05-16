@@ -28,7 +28,8 @@
       "Bash(find \"c:\\\\\\\\Users\\\\\\\\guilh\\\\\\\\TestWise\\\\\\\\testwise\\\\\\\\src\\\\\\\\app\" -type d -name \"*\")",
       "Bash(find \"c:\\\\\\\\Users\\\\\\\\guilh\\\\\\\\TestWise\\\\\\\\testwise\\\\\\\\src\\\\\\\\app\" -name \"*.component.ts\" -o -name \"*.component.html\")",
       "Bash(find \"c:\\\\\\\\Users\\\\\\\\guilh\\\\\\\\TestWise\\\\\\\\testwise\\\\\\\\src\" -maxdepth 2 -type f -name \"*.ts\")",
-      "Bash(find \"c:\\\\\\\\Users\\\\\\\\guilh\\\\\\\\TestWise\\\\\\\\testwise\\\\\\\\src\\\\\\\\app\" -name \"app.component.*\")"
+      "Bash(find \"c:\\\\\\\\Users\\\\\\\\guilh\\\\\\\\TestWise\\\\\\\\testwise\\\\\\\\src\\\\\\\\app\" -name \"app.component.*\")",
+      "Bash(npx tsc *)"
     ]
   }
 }
