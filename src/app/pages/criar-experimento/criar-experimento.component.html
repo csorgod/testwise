@@ -409,6 +409,15 @@
         <ng-template #content let-activateCallback="activateCallback">
           <div class="step-body">
 
+            <div class="step-info-banner">
+              <i class="pi pi-info-circle"></i>
+              <span>Apenas métricas previamente cadastradas no <strong>catálogo de métricas</strong> aparecem aqui. Caso não encontre a métrica desejada, cadastre-a antes de continuar.</span>
+              <span class="step-info-banner-divider"></span>
+              <a routerLink="/metricas" class="step-info-banner-link">
+                <i class="pi pi-arrow-up-right"></i> Ir para Métricas
+              </a>
+            </div>
+
             <!-- Métricas de sucesso -->
             <div class="step-card">
               <h2 class="step-card-title"><i class="pi pi-star" style="color:#16a34a"></i> Métricas de sucesso <span class="required">*</span></h2>
@@ -418,7 +427,7 @@
                   <button
                     class="metric-chip metric-chip--success"
                     [class.selected]="isMetricaSucesso(m.id)"
-                    (click)="metricasSucesso = toggleMetrica(metricasSucesso, m.id)"
+                    (click)="metricasSucesso = isMetricaSucesso(m.id) ? [] : [m.id]"
                   >
                     <i class="pi" [class.pi-check]="isMetricaSucesso(m.id)" [class.pi-plus]="!isMetricaSucesso(m.id)"></i>
                     <span class="mc-name">{{ m.name }}</span>

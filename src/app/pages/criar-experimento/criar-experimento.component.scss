@@ -84,6 +84,48 @@
   margin: -0.75rem 0 0;
 }
 
+// ── Info banner ───────────────────────────────────────────
+.step-info-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  padding: 0.75rem 1rem;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  color: #1e40af;
+  line-height: 1.5;
+
+  i { font-size: 0.9rem; margin-top: 0.05rem; flex-shrink: 0; }
+  strong { font-weight: 600; }
+}
+
+.step-info-banner-divider {
+  width: 1px;
+  align-self: stretch;
+  background: #bfdbfe;
+  flex-shrink: 0;
+  margin: 0 0.25rem;
+}
+
+.step-info-banner-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-left: auto;
+  flex-shrink: 0;
+  align-self: center;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #1d4ed8;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover { text-decoration: underline; }
+  i { font-size: 0.75rem; }
+}
+
 // ── Form grid ─────────────────────────────────────────────
 .form-grid {
   display: grid;
@@ -441,7 +483,7 @@
 
   &--success.selected  { border-color: #16a34a; background: #f0fdf4; i { color: #16a34a; } .mc-name { color: #15803d; } }
   &--guardrail.selected { border-color: #ef4444; background: #fff1f2; i { color: #ef4444; } .mc-name { color: #dc2626; } }
-  &--secondary.selected { border-color: #6b7280; background: #f9fafb; i { color: #6b7280; } .mc-name { color: #374151; } }
+  &--secondary.selected { border-color: #2563eb; background: #eff6ff; i { color: #2563eb; } .mc-name { color: #1d4ed8; } }
 }
 
 .mc-name {
@@ -753,6 +795,7 @@
   border-radius: 0 8px 8px 0;
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: 0.4rem;
 }
 
@@ -785,7 +828,10 @@
 }
 
 .summary-variant-img {
+  display: block;
   max-height: 80px;
+  width: auto;
+  object-fit: contain;
   border-radius: 4px;
   border: 1px solid #e5e7eb;
   margin-top: 0.25rem;
@@ -806,5 +852,5 @@
 
   &--success   { background: #f0fdf4; color: #16a34a; }
   &--guardrail { background: #fff1f2; color: #ef4444; }
-  &--secondary { background: #f3f4f6; color: #6b7280; }
+  &--secondary { background: #eff6ff; color: #2563eb; }
 }

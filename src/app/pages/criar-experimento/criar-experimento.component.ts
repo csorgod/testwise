@@ -1,6 +1,6 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, ChangeDetectorRef } from '@angular/core';
 import { DatePipe, DecimalPipe } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -27,7 +27,7 @@ interface Variante {
   selector: 'app-criar-experimento',
   standalone: true,
   imports: [
-    FormsModule,
+    FormsModule, RouterLink,
     ButtonModule, InputTextModule, TextareaModule, SelectModule,
     InputNumberModule, SliderModule, DatePickerModule, TooltipModule,
     TagModule, StepperModule, DatePipe, DecimalPipe,
@@ -37,6 +37,7 @@ interface Variante {
 })
 export class CriarExperimentoComponent {
   private readonly router = inject(Router);
+  private readonly cdr = inject(ChangeDetectorRef);
   readonly productService = inject(ProductService);
   readonly metricService = inject(MetricService);
 
@@ -234,7 +235,10 @@ export class CriarExperimentoComponent {
     if (!file) return;
     v.imageFile = file;
     const reader = new FileReader();
-    reader.onload = e => v.imagePreview = e.target?.result as string;
+    reader.addEventListener('load', e => {
+      v.imagePreview = (e.target as FileReader).result as string;
+      this.cdr.detectChanges();
+    });
     reader.readAsDataURL(file);
   }
 
