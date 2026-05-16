@@ -1,0 +1,279 @@
+<div class="detalhe-exp">
+
+  @if (experimento(); as exp) {
+
+    <!-- ── Page header ───────────────────────────────────────── -->
+    <div class="page-header">
+      <div class="page-header-left">
+        <p-button icon="pi pi-arrow-left" [text]="true" severity="secondary" (click)="goBack()" />
+        <div>
+          <div class="page-title-row">
+            <h1 class="page-title">{{ exp.nome }}</h1>
+            <p-tag [value]="exp.status" [severity]="statusSeverity(exp.status)" />
+            @if (exp.resultado) {
+              <p-tag [value]="exp.resultado" [severity]="resultadoSeverity(exp.resultado)" />
+            }
+          </div>
+          <p class="page-subtitle">{{ exp.produto }} · {{ exp.subproduto }} · {{ exp.sigla }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Tabs ──────────────────────────────────────────────── -->
+    <p-tabs [(value)]="activeTab">
+
+      <p-tablist>
+        <p-tab value="detalhes">Detalhes</p-tab>
+        <p-tab value="acompanhamento">Acompanhamento</p-tab>
+        <p-tab value="resultado">Resultado</p-tab>
+      </p-tablist>
+
+      <p-tabpanels>
+
+        <!-- ══ Detalhes ════════════════════════════════════════ -->
+        <p-tabpanel value="detalhes">
+          <div class="tab-body">
+
+            <!-- Identificação -->
+            <div class="detail-card">
+              <h2 class="detail-card-title"><i class="pi pi-tag"></i> Identificação</h2>
+              <div class="detail-grid">
+                <div class="detail-item detail-item--full">
+                  <span class="detail-label">Nome do experimento</span>
+                  <span class="detail-value">{{ exp.nome }}</span>
+                </div>
+                <div class="detail-item detail-item--full">
+                  <span class="detail-label">Hipótese</span>
+                  <span class="detail-value">{{ exp.hipotese }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Estrutura organizacional -->
+            <div class="detail-card">
+              <h2 class="detail-card-title"><i class="pi pi-sitemap"></i> Estrutura organizacional</h2>
+              <div class="detail-grid">
+                <div class="detail-item">
+                  <span class="detail-label">Comunidade</span>
+                  <span class="detail-value">{{ exp.comunidade }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">RT</span>
+                  <span class="detail-value">{{ exp.rt }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Squad</span>
+                  <span class="detail-value">{{ exp.squad }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Produto -->
+            <div class="detail-card">
+              <h2 class="detail-card-title"><i class="pi pi-box"></i> Produto</h2>
+              <div class="detail-grid">
+                <div class="detail-item">
+                  <span class="detail-label">Sigla</span>
+                  <span class="detail-value">{{ exp.sigla }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Produto</span>
+                  <span class="detail-value">{{ exp.produto }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Subproduto</span>
+                  <span class="detail-value">{{ exp.subproduto }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Tipo de item</span>
+                  <span class="detail-value">{{ exp.tipoItem }}</span>
+                </div>
+                <div class="detail-item detail-item--full">
+                  <span class="detail-label">Item de trabalho</span>
+                  <span class="detail-value">{{ exp.itemTrabalho }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Configuração -->
+            <div class="detail-card">
+              <h2 class="detail-card-title"><i class="pi pi-sliders-h"></i> Configuração do teste</h2>
+              <div class="detail-grid">
+                <div class="detail-item">
+                  <span class="detail-label">Data de início</span>
+                  <span class="detail-value"><i class="pi pi-calendar detail-icon"></i> {{ exp.dataInicio }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Audiência participante</span>
+                  <span class="detail-value">{{ exp.audiencia }}% do total</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Número de variantes</span>
+                  <span class="detail-value">{{ exp.variantes.length }}</span>
+                </div>
+              </div>
+
+              <!-- Distribuição de tráfego -->
+              <div class="traffic-section">
+                <span class="detail-label">Distribuição de tráfego</span>
+                <div class="traffic-bar">
+                  <div
+                    class="traffic-segment traffic-segment--excluded"
+                    [style.width.%]="100 - exp.audiencia"
+                    [pTooltip]="(100 - exp.audiencia) + '% excluído da audiência'"
+                  ></div>
+                  @for (v of exp.variantes; track $index) {
+                    <div
+                      class="traffic-segment"
+                      [style.width.%]="v.trafficPct * exp.audiencia / 100"
+                      [style.background]="v.color"
+                      [pTooltip]="v.label + ': ' + v.trafficPct + '% (' + (v.trafficPct * exp.audiencia / 100) + '% do total)'"
+                    ></div>
+                  }
+                </div>
+                <div class="traffic-legend">
+                  @if (exp.audiencia < 100) {
+                    <span class="traffic-legend-item">
+                      <span class="legend-dot legend-dot--excluded"></span> {{ 100 - exp.audiencia }}% excluído
+                    </span>
+                  }
+                  @for (v of exp.variantes; track $index) {
+                    <span class="traffic-legend-item">
+                      <span class="legend-dot" [style.background]="v.color"></span>
+                      {{ v.label }}: {{ v.trafficPct }}%
+                    </span>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <!-- Variantes -->
+            <div class="detail-card">
+              <h2 class="detail-card-title"><i class="pi pi-copy"></i> Variantes</h2>
+              <div class="variantes-list">
+                @for (v of exp.variantes; track $index) {
+                  <div class="variante-item" [style.border-left-color]="v.color">
+                    <div class="variante-header">
+                      <span class="variante-badge" [style.background]="v.color">{{ v.label }}</span>
+                      <strong class="variante-nome">{{ v.nome }}</strong>
+                      @if ($index === 0) { <span class="control-tag">Controle</span> }
+                    </div>
+                    <p class="variante-desc">{{ v.descricao }}</p>
+                    @if (v.params.length > 0) {
+                      <div class="variante-params">
+                        @for (p of v.params; track $index) {
+                          <code class="param-chip">{{ p.key }}={{ p.value }}</code>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Métricas -->
+            <div class="detail-card">
+              <h2 class="detail-card-title"><i class="pi pi-chart-bar"></i> Métricas</h2>
+              <div class="detail-grid">
+                <div class="detail-item detail-item--full">
+                  <span class="detail-label">Métrica de sucesso</span>
+                  <div class="metric-tags">
+                    @for (m of exp.metricasSucesso; track m) {
+                      <span class="metric-tag metric-tag--success">{{ m }}</span>
+                    }
+                  </div>
+                </div>
+                @if (exp.metricasGuardrail.length > 0) {
+                  <div class="detail-item detail-item--full">
+                    <span class="detail-label">Métricas de guardrail</span>
+                    <div class="metric-tags">
+                      @for (m of exp.metricasGuardrail; track m) {
+                        <span class="metric-tag metric-tag--guardrail">{{ m }}</span>
+                      }
+                    </div>
+                  </div>
+                }
+                @if (exp.metricasSecundarias.length > 0) {
+                  <div class="detail-item detail-item--full">
+                    <span class="detail-label">Métricas secundárias</span>
+                    <div class="metric-tags">
+                      @for (m of exp.metricasSecundarias; track m) {
+                        <span class="metric-tag metric-tag--secondary">{{ m }}</span>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Parâmetros estatísticos -->
+            <div class="detail-card">
+              <h2 class="detail-card-title"><i class="pi pi-calculator"></i> Parâmetros estatísticos</h2>
+              <div class="detail-grid">
+                <div class="detail-item">
+                  <span class="detail-label">Taxa de conversão base</span>
+                  <span class="detail-value">{{ exp.baselineRate }}%</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Efeito mínimo detectável</span>
+                  <span class="detail-value">{{ exp.mde }}%</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Nível de confiança</span>
+                  <span class="detail-value">{{ exp.confianca }}%</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Poder estatístico</span>
+                  <span class="detail-value">{{ exp.poder }}%</span>
+                </div>
+              </div>
+
+              <div class="stat-result-row">
+                <div class="stat-result-item">
+                  <span class="stat-result-label">Amostra por variante</span>
+                  <span class="stat-result-value">{{ exp.samplePerVariant | number }}</span>
+                </div>
+                <div class="stat-result-item">
+                  <span class="stat-result-label">Total de usuários</span>
+                  <span class="stat-result-value stat-result-value--highlight">{{ exp.totalUsers | number }}</span>
+                </div>
+                @if (exp.diasEstimados) {
+                  <div class="stat-result-item">
+                    <span class="stat-result-label">Duração estimada</span>
+                    <span class="stat-result-value">aprox. {{ exp.diasEstimados }} dias</span>
+                  </div>
+                }
+              </div>
+            </div>
+
+          </div>
+        </p-tabpanel>
+
+        <!-- ══ Acompanhamento ═══════════════════════════════════ -->
+        <p-tabpanel value="acompanhamento">
+          <div class="tab-empty">
+            <i class="pi pi-chart-line"></i>
+            <p>O acompanhamento do experimento estará disponível em breve.</p>
+          </div>
+        </p-tabpanel>
+
+        <!-- ══ Resultado ════════════════════════════════════════ -->
+        <p-tabpanel value="resultado">
+          <div class="tab-empty">
+            <i class="pi pi-trophy"></i>
+            <p>Os resultados do experimento estarão disponíveis após a conclusão.</p>
+          </div>
+        </p-tabpanel>
+
+      </p-tabpanels>
+    </p-tabs>
+
+  } @else {
+    <div class="not-found">
+      <i class="pi pi-exclamation-circle"></i>
+      <p>Experimento não encontrado.</p>
+      <p-button label="Voltar" icon="pi pi-arrow-left" (click)="goBack()" />
+    </div>
+  }
+
+</div>

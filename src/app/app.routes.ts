@@ -21,4 +21,9 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/criar-experimento/criar-experimento.component').then(m => m.CriarExperimentoComponent),
   },
+  {
+    path: 'experimentos/:id',
+    loadComponent: () =>
+      import('./pages/detalhe-experimento/detalhe-experimento.component').then(m => m.DetalheExperimentoComponent),
+  },
 ];

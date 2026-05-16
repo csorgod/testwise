@@ -1,5 +1,6 @@
 import { Component, computed, effect, inject, signal, ViewChild, ElementRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { Tag } from 'primeng/tag';
 import { ButtonModule } from 'primeng/button';
 import { SelectModule } from 'primeng/select';
@@ -24,6 +25,7 @@ interface Hipotese {
 }
 
 interface ExperimentoRef {
+  id?: string;
   titulo: string;
   periodo: string;
   metrica: string;
@@ -84,6 +86,9 @@ interface ProductMemoria {
 export class MemoriaProdutoComponent {
   protected productService = inject(ProductService);
   protected metricService  = inject(MetricService);
+  private readonly router  = inject(Router);
+
+  openExperimento(id: string): void { this.router.navigate(['/experimentos', id]); }
 
   loading = signal(true);
   selectedLearning   = signal<Aprendizado | null>(null);
@@ -349,10 +354,10 @@ export class MemoriaProdutoComponent {
           area: 'UX / Fluxos', periodo: 'Set–Out 2024', metrica: 'Conversão', impacto: '+23%',
           insight: 'Reduzir de 4 para 2 etapas na confirmação eliminou o principal ponto de abandono. Usuários percebem a operação como mais rápida sem redução na percepção de segurança.',
           experimentos: [
-            { titulo: 'Remoção da etapa de revisão pré-envio', periodo: 'Mai 2024', metrica: 'Taxa de conclusão', resultado: '+8%', variante: 'Fluxo sem tela de revisão vs. fluxo com revisão obrigatória' },
-            { titulo: 'Fusão das telas de valor e destinatário', periodo: 'Jun 2024', metrica: 'Conversão', resultado: '+12%', variante: 'Etapa única combinada vs. duas telas separadas' },
-            { titulo: 'Biometria simplificada para valores abaixo de R$50', periodo: 'Ago 2024', metrica: 'Abandono', resultado: '-18%', variante: 'Confirmação rápida vs. biometria completa' },
-            { titulo: 'Confirmação via push para contatos recorrentes', periodo: 'Set 2024', metrica: 'Taxa de conclusão', resultado: '+27%', variante: 'Aprovação por push notification vs. confirmação in-app obrigatória' },
+            { id: 'm1', titulo: 'Remoção da etapa de revisão pré-envio', periodo: 'Mai 2024', metrica: 'Taxa de conclusão', resultado: '+8%', variante: 'Fluxo sem tela de revisão vs. fluxo com revisão obrigatória' },
+            { id: 'm1', titulo: 'Fusão das telas de valor e destinatário', periodo: 'Jun 2024', metrica: 'Conversão', resultado: '+12%', variante: 'Etapa única combinada vs. duas telas separadas' },
+            { id: 'm1', titulo: 'Biometria simplificada para valores abaixo de R$50', periodo: 'Ago 2024', metrica: 'Abandono', resultado: '-18%', variante: 'Confirmação rápida vs. biometria completa' },
+            { id: 'm1', titulo: 'Confirmação via push para contatos recorrentes', periodo: 'Set 2024', metrica: 'Taxa de conclusão', resultado: '+27%', variante: 'Aprovação por push notification vs. confirmação in-app obrigatória' },
           ],
           alternativas: [
             { texto: 'Testar fluxo de 1 etapa para contatos frequentes (sem etapa de revisão)', potencial: 'Alto' },

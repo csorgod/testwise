@@ -1,6 +1,6 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { Tag } from 'primeng/tag';
 import { ButtonModule } from 'primeng/button';
 import { SelectModule } from 'primeng/select';
@@ -30,12 +30,15 @@ interface Experimento {
 
 @Component({
   selector: 'app-experimentos',
-  imports: [FormsModule, RouterLink, Tag, ButtonModule, SelectModule, SkeletonModule, InputTextModule, IconField, InputIcon, PaginatorModule],
+  imports: [FormsModule, Tag, ButtonModule, SelectModule, SkeletonModule, InputTextModule, IconField, InputIcon, PaginatorModule],
   templateUrl: './experimentos.component.html',
   styleUrl: './experimentos.component.scss',
 })
 export class ExperimentosComponent {
   protected productService = inject(ProductService);
+  private readonly router  = inject(Router);
+
+  navigateToDetail(id: string): void { this.router.navigate(['/experimentos', id]); }
 
   loading         = signal(true);
   searchQuery     = signal('');
