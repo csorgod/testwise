@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e \"console.log\\(require\\('./node_modules/primeng/package.json'\\).version\\)\")",
+      "Bash(node -e \"const fs=require\\('fs'\\); const d=fs.readdirSync\\('./node_modules/primeng'\\); console.log\\(d.filter\\(x=>x.includes\\('step'\\)\\)\\)\")",
+      "Bash(node -e \"const e=require\\('./node_modules/primeng/primeng.mjs'\\); const keys=Object.keys\\(e\\); console.log\\(keys.filter\\(k=>k.toLowerCase\\(\\).includes\\('step'\\)\\)\\)\")",
+      "Bash(node -e \"const fs=require\\('fs'\\); const pkg=JSON.parse\\(fs.readFileSync\\('./node_modules/primeng/package.json','utf8'\\)\\); const exp=Object.keys\\(pkg.exports||{}\\); console.log\\(exp.filter\\(k=>k.toLowerCase\\(\\).includes\\('step'\\)\\)\\)\")",
+      "Bash(node -e \"const fs=require\\('fs'\\); const pkg=JSON.parse\\(fs.readFileSync\\('./node_modules/primeng/package.json','utf8'\\)\\); console.log\\(JSON.stringify\\(pkg.exports['./stepper'],null,2\\)\\)\")"
+    ]
+  }
+}

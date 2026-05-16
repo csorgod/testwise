@@ -3,342 +3,823 @@
   <!-- ── Page header ─────────────────────────────────────── -->
   <div class="page-header">
     <div class="page-header-left">
-      <p-button
-        icon="pi pi-arrow-left"
-        [text]="true"
-        severity="secondary"
-        (click)="goBack()"
-        pTooltip="Voltar"
-        tooltipPosition="right"
-      />
+      <p-button icon="pi pi-arrow-left" [text]="true" severity="secondary" (click)="goBack()" />
       <div>
         <h1 class="page-title">Criar Experimento</h1>
-        <p class="page-subtitle">Configure um novo teste A/B para validar sua hipótese</p>
+        <p class="page-subtitle">Configure um novo teste A/B em {{ produto.name }}</p>
       </div>
-    </div>
-
-    <div class="page-header-actions">
-      <p-button label="Cancelar" severity="secondary" [text]="true" (click)="goBack()" />
-      <p-button
-        label="Salvar experimento"
-        icon="pi pi-check"
-        [loading]="saving()"
-        [disabled]="!formValid"
-        (click)="salvar()"
-      />
     </div>
   </div>
 
-  <div class="form-layout">
+  <!-- ── Stepper ──────────────────────────────────────────── -->
+  <p-stepper [(value)]="activeStep">
 
-    <!-- ── LEFT COLUMN ─────────────────────────────────────── -->
-    <div class="form-col form-col-main">
+    <p-step-list>
+      <p-step [value]="1">Identificação</p-step>
+      <p-step [value]="2">Configuração</p-step>
+      <p-step [value]="3">Variantes</p-step>
+      <p-step [value]="4">Métricas</p-step>
+      <p-step [value]="5">Parâmetros</p-step>
+      <p-step [value]="6">Resumo</p-step>
+    </p-step-list>
 
-      <!-- Section: Identificação -->
-      <div class="form-card">
-        <div class="form-card-header">
-          <div class="section-icon section-icon--blue"><i class="pi pi-tag"></i></div>
-          <div>
-            <h2 class="section-title">Identificação</h2>
-            <p class="section-subtitle">Informações básicas do experimento</p>
-          </div>
-        </div>
+    <p-step-panels>
 
-        <div class="form-grid">
-          <div class="form-field form-field--full">
-            <label class="form-label">Nome do experimento <span class="required">*</span></label>
-            <input pInputText [(ngModel)]="nome" placeholder="Ex: Novo fluxo de confirmação PIX" class="form-input" />
-          </div>
+      <!-- ══ STEP 1 — Identificação ══════════════════════════ -->
+      <p-step-panel [value]="1">
+        <ng-template #content let-activateCallback="activateCallback">
+          <div class="step-body">
 
-          <div class="form-field form-field--full">
-            <label class="form-label">Hipótese <span class="required">*</span></label>
-            <textarea
-              pTextarea
-              [(ngModel)]="hipotese"
-              placeholder="Se [mudança], então [resultado esperado], porque [justificativa]..."
-              rows="3"
-              class="form-input"
-              autoResize="false"
-            ></textarea>
-          </div>
+            <div class="step-card">
+              <h2 class="step-card-title"><i class="pi pi-tag"></i> Identificação do experimento</h2>
 
-          <div class="form-field">
-            <label class="form-label">Área <span class="required">*</span></label>
-            <p-select
-              [options]="areaOptions"
-              [(ngModel)]="area"
-              optionLabel="label"
-              optionValue="value"
-              placeholder="Selecionar área"
-              [style]="{ width: '100%' }"
-            />
-          </div>
+              <div class="form-grid">
 
-          <div class="form-field">
-            <label class="form-label">Produto</label>
-            <p-select
-              [options]="productService.products"
-              [ngModel]="productService.selected()"
-              (ngModelChange)="productService.select($event)"
-              optionLabel="name"
-              [style]="{ width: '100%' }"
-            />
-          </div>
-        </div>
-      </div>
+                <div class="form-field form-field--full">
+                  <label class="form-label">Nome do experimento <span class="required">*</span></label>
+                  <input pInputText [(ngModel)]="nome" placeholder="Ex: Novo fluxo de confirmação PIX" class="form-input" />
+                </div>
 
-      <!-- Section: Variantes A/B -->
-      <div class="form-card">
-        <div class="form-card-header">
-          <div class="section-icon section-icon--orange"><i class="pi pi-copy"></i></div>
-          <div>
-            <h2 class="section-title">Variantes A/B</h2>
-            <p class="section-subtitle">Defina controle e variante do teste</p>
-          </div>
-        </div>
+                <div class="form-field form-field--full">
+                  <label class="form-label">Hipótese <span class="required">*</span></label>
+                  <textarea
+                    pTextarea
+                    [(ngModel)]="hipotese"
+                    placeholder="Se [mudança], então [resultado esperado], porque [justificativa]..."
+                    rows="3"
+                    class="form-input"
+                  ></textarea>
+                </div>
 
-        <!-- Traffic split -->
-        <div class="traffic-split-section">
-          <div class="traffic-labels">
-            <span class="traffic-label traffic-label--a">A — {{ trafficA }}%</span>
-            <span class="traffic-label traffic-label--b">B — {{ trafficB }}%</span>
-          </div>
-          <div class="traffic-bar">
-            <div class="traffic-bar-a" [style.width.%]="trafficA"></div>
-            <div class="traffic-bar-b" [style.width.%]="trafficB"></div>
-          </div>
-          <p-slider [(ngModel)]="trafficSplit" [min]="10" [max]="90" [step]="5" styleClass="traffic-slider" />
-          <p class="traffic-hint">Arraste para ajustar a divisão de tráfego entre as variantes</p>
-        </div>
-
-        <div class="variantes-grid">
-          <!-- Controle A -->
-          <div class="variante-card variante-card--a">
-            <div class="variante-header">
-              <span class="variante-badge variante-badge--a">A</span>
-              <span class="variante-type">Controle</span>
-              <span class="variante-traffic">{{ trafficA }}% do tráfego</span>
+              </div>
             </div>
-            <div class="form-field">
-              <label class="form-label">Nome da variante</label>
-              <input pInputText [(ngModel)]="controleNome" class="form-input" />
+
+            <!-- Estrutura organizacional -->
+            <div class="step-card">
+              <h2 class="step-card-title"><i class="pi pi-sitemap"></i> Estrutura organizacional</h2>
+
+              <div class="form-grid">
+
+                <div class="form-field">
+                  <label class="form-label">Comunidade</label>
+                  <input pInputText [ngModel]="comunidade" [disabled]="true" class="form-input field-locked" />
+                </div>
+
+                <div class="form-field">
+                  <label class="form-label">RT (Resultado de Transformação)</label>
+                  <input pInputText [ngModel]="rt" [disabled]="true" class="form-input field-locked" />
+                </div>
+
+                <div class="form-field">
+                  <label class="form-label">Squad</label>
+                  <p-select
+                    [options]="squadOptions"
+                    [(ngModel)]="squad"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Selecionar squad"
+                    [style]="{ width: '100%' }"
+                  />
+                </div>
+
+              </div>
             </div>
-            <div class="form-field">
-              <label class="form-label">Descrição <span class="required">*</span></label>
-              <textarea
-                pTextarea
-                [(ngModel)]="controleDescricao"
-                placeholder="Descreva o comportamento atual (sem mudanças)..."
-                rows="3"
-                class="form-input"
-                autoResize="false"
-              ></textarea>
+
+            <!-- Produto -->
+            <div class="step-card">
+              <h2 class="step-card-title"><i class="pi pi-box"></i> Produto</h2>
+              <div class="form-grid">
+                <div class="form-field">
+                  <label class="form-label">Sigla do produto</label>
+                  <p-select
+                    [options]="siglaOptions"
+                    [(ngModel)]="sigla"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Selecionar sigla"
+                    [emptyMessage]="'Nenhuma sigla cadastrada'"
+                    [style]="{ width: '100%' }"
+                  />
+                </div>
+                <div class="form-field">
+                  <label class="form-label">Produto</label>
+                  <p-select
+                    [options]="productService.products"
+                    [(ngModel)]="produto"
+                    optionLabel="name"
+                    placeholder="Selecionar produto"
+                    (ngModelChange)="subproduto = ''"
+                    [style]="{ width: '100%' }"
+                  />
+                </div>
+                <div class="form-field">
+                  <label class="form-label">Subproduto</label>
+                  <p-select
+                    [options]="subprodutoOptions"
+                    [(ngModel)]="subproduto"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Selecionar subproduto"
+                    [disabled]="!produto"
+                    [style]="{ width: '100%' }"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Item de trabalho -->
+            <div class="step-card">
+              <h2 class="step-card-title"><i class="pi pi-briefcase"></i> Item de trabalho</h2>
+              <div class="form-grid">
+
+                <div class="form-field">
+                  <label class="form-label">Tipo</label>
+                  <p-select
+                    [options]="tipoItemOptions"
+                    [(ngModel)]="tipoItemTrabalho"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Feature ou história"
+                    (ngModelChange)="onTipoItemChange()"
+                    [style]="{ width: '100%' }"
+                  />
+                </div>
+
+                <div class="form-field">
+                  <label class="form-label">Item de trabalho</label>
+                  <p-select
+                    [options]="itensTrabalhoOptions"
+                    [(ngModel)]="itemTrabalho"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Buscar e selecionar item..."
+                    [filter]="true"
+                    filterPlaceholder="Buscar por nome ou código..."
+                    [disabled]="!tipoItemTrabalho"
+                    [emptyMessage]="'Nenhum item encontrado'"
+                    [emptyFilterMessage]="'Nenhum resultado para a busca'"
+                    [style]="{ width: '100%' }"
+                  />
+                </div>
+
+              </div>
+            </div>
+
+            <div class="step-actions">
+              <p-button label="Cancelar" severity="secondary" [text]="true" (click)="goBack()" />
+              <p-button
+                label="Próximo"
+                icon="pi pi-arrow-right"
+                iconPos="right"
+                [disabled]="!step1Valid"
+                (click)="activateCallback(2)"
+              />
             </div>
           </div>
+        </ng-template>
+      </p-step-panel>
 
-          <!-- Variante B -->
-          <div class="variante-card variante-card--b">
-            <div class="variante-header">
-              <span class="variante-badge variante-badge--b">B</span>
-              <span class="variante-type">Variante</span>
-              <span class="variante-traffic">{{ trafficB }}% do tráfego</span>
+      <!-- ══ STEP 2 — Configuração do Teste ══════════════════ -->
+      <p-step-panel [value]="2">
+        <ng-template #content let-activateCallback="activateCallback">
+          <div class="step-body">
+
+            <div class="step-card">
+              <h2 class="step-card-title"><i class="pi pi-sliders-h"></i> Configuração do teste</h2>
+
+              <div class="form-grid">
+
+                <div class="form-field">
+                  <label class="form-label">Data de início</label>
+                  <p-datepicker
+                    [(ngModel)]="dataInicio"
+                    dateFormat="dd/mm/yy"
+                    placeholder="Selecionar data"
+                    [showIcon]="true"
+                    [style]="{ width: '100%' }"
+                  />
+                </div>
+
+                <div class="form-field">
+                  <label class="form-label">Audiência participante (%)</label>
+                  <p-inputnumber
+                    [(ngModel)]="audiencia"
+                    [min]="1"
+                    [max]="100"
+                    suffix="%"
+                    [style]="{ width: '100%' }"
+                  />
+                </div>
+
+              </div>
             </div>
-            <div class="form-field">
-              <label class="form-label">Nome da variante</label>
-              <input pInputText [(ngModel)]="varianteNome" class="form-input" />
+
+            <!-- Variantes count -->
+            <div class="step-card">
+              <h2 class="step-card-title"><i class="pi pi-copy"></i> Quantidade de variantes</h2>
+              <p class="step-card-subtitle">Selecione quantas variantes este experimento terá (incluindo o controle)</p>
+
+              <div class="variant-count-selector">
+                @for (n of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; track n) {
+                  <button
+                    class="variant-count-btn"
+                    [class.active]="nVariantes === n"
+                    (click)="onNVariantesChange(n)"
+                  >
+                    <span class="vcb-number">{{ n }}</span>
+                    <span class="vcb-label">{{ n === 1 ? 'variante' : 'variantes' }}</span>
+                  </button>
+                }
+              </div>
             </div>
-            <div class="form-field">
-              <label class="form-label">Descrição <span class="required">*</span></label>
-              <textarea
-                pTextarea
-                [(ngModel)]="varianteDescricao"
-                placeholder="Descreva a mudança que será testada..."
-                rows="3"
-                class="form-input"
-                autoResize="false"
-              ></textarea>
+
+            <!-- Traffic distribution -->
+            <div class="step-card">
+              <h2 class="step-card-title"><i class="pi pi-percentage"></i> Distribuição de tráfego</h2>
+              <p class="step-card-subtitle">A distribuição é sempre igualitária entre as variantes selecionadas</p>
+
+              <!-- Visual bar -->
+              <div class="traffic-bar-visual">
+                @if (audiencia < 100) {
+                  <div
+                    class="traffic-segment traffic-segment--excluded"
+                    [style.width.%]="100 - audiencia"
+                    [pTooltip]="'Fora do experimento: ' + (100 - audiencia) + '% dos usuários'"
+                    tooltipPosition="top"
+                  >
+                    @if ((100 - audiencia) >= 10) {
+                      <span>{{ 100 - audiencia }}%</span>
+                    }
+                  </div>
+                }
+                @for (t of trafficSplit; track $index) {
+                  <div
+                    class="traffic-segment"
+                    [style.width.%]="t * audiencia / 100"
+                    [style.background]="variantColors[$index]"
+                    [pTooltip]="variantLabels[$index] + ': ' + t + '% do teste (' + (t * audiencia / 100 | number:'1.0-1') + '% do total)'"
+                    tooltipPosition="top"
+                  >
+                    @if (t * audiencia / 100 >= 8) {
+                      <span>{{ variantLabels[$index] }}</span>
+                    }
+                  </div>
+                }
+              </div>
+
+              @if (audiencia < 100) {
+                <div class="traffic-audience-legend">
+                  <span class="legend-excluded"></span> {{ 100 - audiencia }}% dos usuários fora do experimento
+                  <span class="legend-sep">·</span>
+                  <span class="legend-included"></span> {{ audiencia }}% participam do teste
+                </div>
+              }
+
+              <!-- Rows per variant -->
+              <div class="traffic-inputs">
+                @for (v of variantes; track $index) {
+                  <div class="traffic-row">
+                    <div class="traffic-badge" [style.background]="variantColors[$index]">
+                      {{ variantLabels[$index] }}
+                    </div>
+                    <span class="traffic-name">{{ v.nome }}</span>
+                    <span class="traffic-effective">
+                      {{ (trafficSplit[$index] * audiencia / 100) | number:'1.0-1' }}% do total
+                    </span>
+                    <span class="traffic-pct-display" [style.background]="variantColors[$index] + '1a'" [style.color]="variantColors[$index]">
+                      {{ trafficSplit[$index] }}% do teste
+                    </span>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <div class="step-actions">
+              <p-button label="Anterior" icon="pi pi-arrow-left" severity="secondary" [text]="true" (click)="activateCallback(1)" />
+              <p-button
+                label="Próximo"
+                icon="pi pi-arrow-right"
+                iconPos="right"
+                [disabled]="!step2Valid"
+                (click)="activateCallback(3)"
+              />
             </div>
           </div>
-        </div>
-      </div>
+        </ng-template>
+      </p-step-panel>
 
-      <!-- Section: Métricas e Impacto -->
-      <div class="form-card">
-        <div class="form-card-header">
-          <div class="section-icon section-icon--green"><i class="pi pi-chart-bar"></i></div>
-          <div>
-            <h2 class="section-title">Métricas e Impacto</h2>
-            <p class="section-subtitle">Defina o que será medido e os critérios de sucesso</p>
+      <!-- ══ STEP 3 — Variantes ═══════════════════════════════ -->
+      <p-step-panel [value]="3">
+        <ng-template #content let-activateCallback="activateCallback">
+          <div class="step-body">
+
+            @for (v of variantes; track $index) {
+              <div class="step-card variant-card" [style.border-left-color]="variantColors[$index]">
+                <div class="variant-card-header">
+                  <div class="variant-badge" [style.background]="variantColors[$index]">{{ variantLabels[$index] }}</div>
+                  <h2 class="step-card-title" style="margin:0">Variante {{ variantLabels[$index] }}
+                    @if ($index === 0) { <span class="control-tag">Controle</span> }
+                  </h2>
+                </div>
+
+                <div class="form-grid">
+
+                  <div class="form-field">
+                    <label class="form-label">Nome da variante <span class="required">*</span></label>
+                    <input pInputText [(ngModel)]="v.nome" class="form-input" />
+                  </div>
+
+                  <div class="form-field form-field--full">
+                    <label class="form-label">Descrição <span class="required">*</span></label>
+                    <textarea
+                      pTextarea
+                      [(ngModel)]="v.descricao"
+                      [placeholder]="$index === 0 ? 'Descreva o comportamento atual (sem mudanças)...' : 'Descreva a mudança que será testada...'"
+                      rows="2"
+                      class="form-input"
+                    ></textarea>
+                  </div>
+
+                </div>
+
+                <!-- Parâmetros chave-valor -->
+                <div class="params-section">
+                  <div class="params-header">
+                    <span class="params-title">Parâmetros</span>
+                    <p-button
+                      label="Adicionar parâmetro"
+                      icon="pi pi-plus"
+                      size="small"
+                      [text]="true"
+                      (click)="addParam(v)"
+                    />
+                  </div>
+
+                  @if (v.params.length === 0) {
+                    <p class="params-empty">Nenhum parâmetro configurado. Clique em "Adicionar parâmetro" para incluir pares chave-valor.</p>
+                  }
+
+                  @for (p of v.params; track $index) {
+                    <div class="param-row">
+                      <input pInputText [(ngModel)]="p.key" placeholder="Chave" class="param-input" />
+                      <span class="param-sep">=</span>
+                      <input pInputText [(ngModel)]="p.value" placeholder="Valor" class="param-input" />
+                      <p-button icon="pi pi-trash" severity="danger" [text]="true" size="small" (click)="removeParam(v, $index)" />
+                    </div>
+                  }
+                </div>
+
+                <!-- Imagem -->
+                <div class="image-section">
+                  <span class="params-title">Imagem da variante</span>
+                  @if (v.imagePreview) {
+                    <div class="image-preview-wrap">
+                      <img [src]="v.imagePreview" class="image-preview" alt="Preview" />
+                      <p-button icon="pi pi-trash" severity="danger" [text]="true" size="small" (click)="removeImage(v)" pTooltip="Remover imagem" />
+                    </div>
+                  } @else {
+                    <label class="image-upload-area">
+                      <i class="pi pi-image"></i>
+                      <span>Clique para selecionar uma imagem</span>
+                      <span class="image-hint">PNG, JPG, GIF até 5MB</span>
+                      <input type="file" accept="image/*" style="display:none" (change)="onImageSelect($event, v)" />
+                    </label>
+                  }
+                </div>
+
+              </div>
+            }
+
+            <div class="step-actions">
+              <p-button label="Anterior" icon="pi pi-arrow-left" severity="secondary" [text]="true" (click)="activateCallback(2)" />
+              <p-button
+                label="Próximo"
+                icon="pi pi-arrow-right"
+                iconPos="right"
+                [disabled]="!step3Valid"
+                (click)="activateCallback(4)"
+              />
+            </div>
           </div>
-        </div>
+        </ng-template>
+      </p-step-panel>
 
-        <div class="form-grid">
-          <div class="form-field form-field--full">
-            <label class="form-label">Métrica principal <span class="required">*</span></label>
-            <p-select
-              [options]="metricaOptions"
-              [(ngModel)]="metricaPrincipal"
-              optionLabel="label"
-              optionValue="value"
-              placeholder="Selecionar métrica"
-              [style]="{ width: '100%' }"
-            />
+      <!-- ══ STEP 4 — Métricas ════════════════════════════════ -->
+      <p-step-panel [value]="4">
+        <ng-template #content let-activateCallback="activateCallback">
+          <div class="step-body">
+
+            <!-- Métricas de sucesso -->
+            <div class="step-card">
+              <h2 class="step-card-title"><i class="pi pi-star" style="color:#16a34a"></i> Métricas de sucesso <span class="required">*</span></h2>
+              <p class="step-card-subtitle">O experimento será considerado vencedor se houver melhora nestas métricas</p>
+              <div class="metric-chip-grid">
+                @for (m of metricService.metrics; track m.id) {
+                  <button
+                    class="metric-chip metric-chip--success"
+                    [class.selected]="isMetricaSucesso(m.id)"
+                    (click)="metricasSucesso = toggleMetrica(metricasSucesso, m.id)"
+                  >
+                    <i class="pi" [class.pi-check]="isMetricaSucesso(m.id)" [class.pi-plus]="!isMetricaSucesso(m.id)"></i>
+                    <span class="mc-name">{{ m.name }}</span>
+                    <span class="mc-cat">{{ m.category }}</span>
+                  </button>
+                }
+              </div>
+            </div>
+
+            <!-- Métricas de guardrail -->
+            <div class="step-card">
+              <h2 class="step-card-title"><i class="pi pi-shield" style="color:#ef4444"></i> Métricas de guardrail</h2>
+              <p class="step-card-subtitle">Métricas que não devem piorar durante o experimento</p>
+              <div class="metric-chip-grid">
+                @for (m of metricService.metrics; track m.id) {
+                  <button
+                    class="metric-chip metric-chip--guardrail"
+                    [class.selected]="isMetricaGuardrail(m.id)"
+                    (click)="metricasGuardrail = toggleMetrica(metricasGuardrail, m.id)"
+                  >
+                    <i class="pi" [class.pi-check]="isMetricaGuardrail(m.id)" [class.pi-plus]="!isMetricaGuardrail(m.id)"></i>
+                    <span class="mc-name">{{ m.name }}</span>
+                    <span class="mc-cat">{{ m.category }}</span>
+                  </button>
+                }
+              </div>
+            </div>
+
+            <!-- Métricas secundárias -->
+            <div class="step-card">
+              <h2 class="step-card-title"><i class="pi pi-chart-line" style="color:#6b7280"></i> Métricas secundárias</h2>
+              <p class="step-card-subtitle">Métricas observadas mas que não determinam o resultado</p>
+              <div class="metric-chip-grid">
+                @for (m of metricService.metrics; track m.id) {
+                  <button
+                    class="metric-chip metric-chip--secondary"
+                    [class.selected]="isMetricaSecundaria(m.id)"
+                    (click)="metricasSecundarias = toggleMetrica(metricasSecundarias, m.id)"
+                  >
+                    <i class="pi" [class.pi-check]="isMetricaSecundaria(m.id)" [class.pi-plus]="!isMetricaSecundaria(m.id)"></i>
+                    <span class="mc-name">{{ m.name }}</span>
+                    <span class="mc-cat">{{ m.category }}</span>
+                  </button>
+                }
+              </div>
+            </div>
+
+            <div class="step-actions">
+              <p-button label="Anterior" icon="pi pi-arrow-left" severity="secondary" [text]="true" (click)="activateCallback(3)" />
+              <p-button
+                label="Próximo"
+                icon="pi pi-arrow-right"
+                iconPos="right"
+                [disabled]="!step4Valid"
+                (click)="activateCallback(5)"
+              />
+            </div>
           </div>
+        </ng-template>
+      </p-step-panel>
 
-          <div class="form-field">
-            <label class="form-label">Nível de confiança <span class="required">*</span></label>
-            <p-select
-              [options]="confiancaOptions"
-              [(ngModel)]="confianca"
-              optionLabel="label"
-              optionValue="value"
-              placeholder="Selecionar"
-              [style]="{ width: '100%' }"
-            />
+      <!-- ══ STEP 5 — Calculadora de amostra ═════════════════ -->
+      <p-step-panel [value]="5">
+        <ng-template #content let-activateCallback="activateCallback">
+          <div class="step-body">
+
+
+            <!-- Fórmula usada: n = (z_α/2 + z_β)² × (p₁(1−p₁) + p₂(1−p₂)) / (p₁−p₂)² —> teoria padrão para teste de proporções. -->
+            <!-- Entradas da calculadora -->
+            <div class="step-card">
+              <h2 class="step-card-title"><i class="pi pi-calculator"></i> Parâmetros da calculadora</h2>
+              <p class="step-card-subtitle">Preencha os campos abaixo para calcular o tamanho de amostra necessário para o seu teste</p>
+
+              <!-- Taxa de conversão base -->
+              <div class="calc-field">
+                <div class="calc-field-header">
+                  <div>
+                    <label class="form-label">Taxa de conversão base</label>
+                    <p class="form-hint">A taxa atual da sua versão original (Controle). Ex: se 5 em 100 usuários convertem, use 5%.</p>
+                  </div>
+                  <span class="calc-field-value">{{ baselineRate | number:'1.1-1' }}%</span>
+                </div>
+                <p-slider [(ngModel)]="baselineRate" [min]="0.5" [max]="50" [step]="0.5" />
+              </div>
+
+              <!-- MDE -->
+              <div class="calc-field">
+                <div class="calc-field-header">
+                  <div>
+                    <label class="form-label">Efeito mínimo detectável (MDE)</label>
+                    <p class="form-hint">
+                      A menor melhoria relativa que você quer ser capaz de detectar.
+                      <strong>Menor MDE = amostra maior.</strong>
+                    </p>
+                  </div>
+                  <span class="calc-field-value">{{ mde | number:'1.0-0' }}%</span>
+                </div>
+                <p-slider [(ngModel)]="mde" [min]="1" [max]="100" [step]="1" />
+                <div class="mde-preview">
+                  Detectar melhoria de <strong>{{ mde }}%</strong> relativa:
+                  de <strong>{{ baselineRate | number:'1.1-1' }}%</strong>
+                  para <strong>{{ targetRate | number:'1.1-2' }}%</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- Confiança e Poder (lado a lado) -->
+            <div class="calc-row-cards">
+
+              <div class="step-card flex-1">
+                <h2 class="step-card-title"><i class="pi pi-shield"></i> Nível de confiança</h2>
+                <p class="step-card-subtitle">Certeza de que o resultado não é obra do acaso. <strong>95% é o padrão do mercado.</strong></p>
+                <div class="stat-option-grid">
+                  @for (opt of confiancaOptions; track opt.value) {
+                    <button class="stat-option-btn" [class.active]="confianca === opt.value" (click)="confianca = opt.value">
+                      <span class="sob-value">{{ opt.label }}</span>
+                      <span class="sob-desc">{{ opt.desc }}</span>
+                    </button>
+                  }
+                </div>
+              </div>
+
+              <div class="step-card flex-1">
+                <h2 class="step-card-title"><i class="pi pi-bolt"></i> Poder estatístico</h2>
+                <p class="step-card-subtitle">Probabilidade de detectar um efeito real caso ele exista. <strong>80% é o padrão do mercado.</strong></p>
+                <div class="stat-option-grid">
+                  @for (opt of poderOptions; track opt.value) {
+                    <button class="stat-option-btn" [class.active]="poder === opt.value" (click)="poder = opt.value">
+                      <span class="sob-value">{{ opt.label }}</span>
+                      <span class="sob-desc">{{ opt.desc }}</span>
+                    </button>
+                  }
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Resultado calculado -->
+            @if (calculatedSamplePerVariant) {
+              <div class="calc-result-card">
+                <div class="calc-result-header">
+                  <i class="pi pi-chart-bar"></i>
+                  <span>Tamanho de amostra calculado</span>
+                </div>
+                <div class="calc-result-numbers">
+                  <div class="calc-result-item">
+                    <span class="crn-value">{{ calculatedSamplePerVariant | number }}</span>
+                    <span class="crn-label">usuários por variante</span>
+                  </div>
+                  <div class="calc-result-sep">×</div>
+                  <div class="calc-result-item">
+                    <span class="crn-value">{{ nVariantes }}</span>
+                    <span class="crn-label">variantes</span>
+                  </div>
+                  <div class="calc-result-sep">=</div>
+                  <div class="calc-result-item calc-result-item--total">
+                    <span class="crn-value">{{ calculatedTotalUsers | number }}</span>
+                    <span class="crn-label">usuários no total</span>
+                  </div>
+                </div>
+
+                <!-- Estimativa de duração -->
+                <div class="calc-duration-row">
+                  <div class="calc-duration-input">
+                    <label class="form-label">Usuários elegíveis por dia <span class="optional">(opcional)</span></label>
+                    <p-inputnumber
+                      [(ngModel)]="usuariosPorDia"
+                      [min]="1"
+                      placeholder="Ex: 10000"
+                      [style]="{ width: '200px' }"
+                    />
+                  </div>
+                  @if (calculatedDays) {
+                    <div class="calc-duration-result">
+                      <i class="pi pi-calendar"></i>
+                      <span>Duração estimada: <strong>aprox. {{ calculatedDays }} dias</strong></span>
+                      <span class="calc-duration-note">(considerando {{ audiencia }}% de audiência)</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
+            <div class="step-actions">
+              <p-button label="Anterior" icon="pi pi-arrow-left" severity="secondary" [text]="true" (click)="activateCallback(4)" />
+              <p-button
+                label="Revisar experimento"
+                icon="pi pi-arrow-right"
+                iconPos="right"
+                [disabled]="!step5Valid"
+                (click)="activateCallback(6)"
+              />
+            </div>
           </div>
+        </ng-template>
+      </p-step-panel>
 
-          <div class="form-field">
-            <label class="form-label">Impacto mínimo esperado (%)</label>
-            <p-inputnumber
-              [(ngModel)]="impactoMinimo"
-              placeholder="Ex: 5"
-              [min]="0.1"
-              [max]="100"
-              [minFractionDigits]="1"
-              [maxFractionDigits]="1"
-              suffix="%"
-              [style]="{ width: '100%' }"
-              inputStyleClass="form-input"
-            />
+      <!-- ══ STEP 6 — Resumo ══════════════════════════════════ -->
+      <p-step-panel [value]="6">
+        <ng-template #content let-activateCallback="activateCallback">
+          <div class="step-body">
+
+            <!-- Identificação -->
+            <div class="summary-card">
+              <div class="summary-card-header">
+                <h2 class="summary-section-title"><i class="pi pi-tag"></i> Identificação</h2>
+                <p-button label="Editar" icon="pi pi-pencil" size="small" [text]="true" severity="secondary" (click)="activateCallback(1)" />
+              </div>
+              <div class="summary-grid">
+                <div class="summary-item">
+                  <span class="summary-label">Nome</span>
+                  <span class="summary-value">{{ nome }}</span>
+                </div>
+                <div class="summary-item summary-item--full">
+                  <span class="summary-label">Hipótese</span>
+                  <span class="summary-value">{{ hipotese }}</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-label">Produto</span>
+                  <span class="summary-value">{{ produto.name }}</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-label">Subproduto</span>
+                  <span class="summary-value">{{ subproduto || '—' }}</span>
+                </div>
+                @if (sigla) {
+                  <div class="summary-item">
+                    <span class="summary-label">Sigla</span>
+                    <span class="summary-value">{{ sigla }}</span>
+                  </div>
+                }
+                <div class="summary-item">
+                  <span class="summary-label">Comunidade</span>
+                  <span class="summary-value">{{ comunidade }}</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-label">RT</span>
+                  <span class="summary-value">{{ rt }}</span>
+                </div>
+                @if (squad) {
+                  <div class="summary-item">
+                    <span class="summary-label">Squad</span>
+                    <span class="summary-value">{{ squad }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Configuração -->
+            <div class="summary-card">
+              <div class="summary-card-header">
+                <h2 class="summary-section-title"><i class="pi pi-sliders-h"></i> Configuração</h2>
+                <p-button label="Editar" icon="pi pi-pencil" size="small" [text]="true" severity="secondary" (click)="activateCallback(2)" />
+              </div>
+              <div class="summary-grid">
+                <div class="summary-item">
+                  <span class="summary-label">Início</span>
+                  <span class="summary-value">{{ dataInicio ? (dataInicio | date: 'dd/MM/yyyy') : '—' }}</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-label">Audiência</span>
+                  <span class="summary-value">{{ audiencia }}%</span>
+                </div>
+                <div class="summary-item summary-item--full">
+                  <span class="summary-label">Distribuição de tráfego</span>
+                  <div class="summary-traffic">
+                    @for (v of variantes; track $index) {
+                      <div class="summary-traffic-item">
+                        <div class="summary-badge" [style.background]="variantColors[$index]">{{ variantLabels[$index] }}</div>
+                        <span>{{ v.nome }} — {{ trafficSplit[$index] }}%</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Variantes -->
+            <div class="summary-card">
+              <div class="summary-card-header">
+                <h2 class="summary-section-title"><i class="pi pi-copy"></i> Variantes</h2>
+                <p-button label="Editar" icon="pi pi-pencil" size="small" [text]="true" severity="secondary" (click)="activateCallback(3)" />
+              </div>
+              <div class="summary-variants">
+                @for (v of variantes; track $index) {
+                  <div class="summary-variant-item" [style.border-left-color]="variantColors[$index]">
+                    <div class="summary-variant-header">
+                      <div class="summary-badge" [style.background]="variantColors[$index]">{{ variantLabels[$index] }}</div>
+                      <strong>{{ v.nome }}</strong>
+                      @if ($index === 0) { <span class="control-tag">Controle</span> }
+                    </div>
+                    <p class="summary-variant-desc">{{ v.descricao }}</p>
+                    @if (v.params.length > 0) {
+                      <div class="summary-params">
+                        @for (p of v.params; track $index) {
+                          <code class="param-chip">{{ p.key }}={{ p.value }}</code>
+                        }
+                      </div>
+                    }
+                    @if (v.imagePreview) {
+                      <img [src]="v.imagePreview" class="summary-variant-img" alt="Preview" />
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Métricas -->
+            <div class="summary-card">
+              <div class="summary-card-header">
+                <h2 class="summary-section-title"><i class="pi pi-chart-bar"></i> Métricas</h2>
+                <p-button label="Editar" icon="pi pi-pencil" size="small" [text]="true" severity="secondary" (click)="activateCallback(4)" />
+              </div>
+              <div class="summary-grid">
+                <div class="summary-item summary-item--full">
+                  <span class="summary-label">Métricas de sucesso</span>
+                  <div class="summary-tags">
+                    @for (id of metricasSucesso; track id) {
+                      <span class="summary-tag summary-tag--success">{{ getMetricName(id) }}</span>
+                    }
+                  </div>
+                </div>
+                @if (metricasGuardrail.length > 0) {
+                  <div class="summary-item summary-item--full">
+                    <span class="summary-label">Métricas de guardrail</span>
+                    <div class="summary-tags">
+                      @for (id of metricasGuardrail; track id) {
+                        <span class="summary-tag summary-tag--guardrail">{{ getMetricName(id) }}</span>
+                      }
+                    </div>
+                  </div>
+                }
+                @if (metricasSecundarias.length > 0) {
+                  <div class="summary-item summary-item--full">
+                    <span class="summary-label">Métricas secundárias</span>
+                    <div class="summary-tags">
+                      @for (id of metricasSecundarias; track id) {
+                        <span class="summary-tag summary-tag--secondary">{{ getMetricName(id) }}</span>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Parâmetros estatísticos -->
+            <div class="summary-card">
+              <div class="summary-card-header">
+                <h2 class="summary-section-title"><i class="pi pi-calculator"></i> Parâmetros estatísticos</h2>
+                <p-button label="Editar" icon="pi pi-pencil" size="small" [text]="true" severity="secondary" (click)="activateCallback(5)" />
+              </div>
+              <div class="summary-grid">
+                <div class="summary-item">
+                  <span class="summary-label">Taxa de conversão base</span>
+                  <span class="summary-value">{{ baselineRate | number:'1.1-1' }}%</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-label">MDE relativo</span>
+                  <span class="summary-value">{{ mde }}% ({{ baselineRate | number:'1.1-1' }}% → {{ targetRate | number:'1.1-2' }}%)</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-label">Nível de confiança</span>
+                  <span class="summary-value">{{ confianca }}%</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-label">Poder estatístico</span>
+                  <span class="summary-value">{{ poder }}%</span>
+                </div>
+                @if (calculatedSamplePerVariant) {
+                  <div class="summary-item">
+                    <span class="summary-label">Amostra por variante</span>
+                    <span class="summary-value">{{ calculatedSamplePerVariant | number }} usuários</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="summary-label">Total necessário</span>
+                    <span class="summary-value">{{ calculatedTotalUsers | number }} usuários</span>
+                  </div>
+                }
+                @if (calculatedDays) {
+                  <div class="summary-item">
+                    <span class="summary-label">Duração estimada</span>
+                    <span class="summary-value">aprox. {{ calculatedDays }} dias</span>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <div class="step-actions step-actions--final">
+              <p-button label="Anterior" icon="pi pi-arrow-left" severity="secondary" [text]="true" (click)="activateCallback(5)" />
+              <p-button
+                label="Criar experimento"
+                icon="pi pi-check"
+                [loading]="saving()"
+                (click)="salvar()"
+              />
+            </div>
           </div>
-        </div>
-      </div>
+        </ng-template>
+      </p-step-panel>
 
-    </div>
-
-    <!-- ── RIGHT COLUMN ────────────────────────────────────── -->
-    <div class="form-col form-col-side">
-
-      <!-- Section: Cronograma -->
-      <div class="form-card">
-        <div class="form-card-header">
-          <div class="section-icon section-icon--yellow"><i class="pi pi-calendar"></i></div>
-          <div>
-            <h2 class="section-title">Cronograma</h2>
-            <p class="section-subtitle">Planejamento temporal do experimento</p>
-          </div>
-        </div>
-
-        <div class="form-grid form-grid--single">
-          <div class="form-field form-field--full">
-            <label class="form-label">Data de início</label>
-            <p-datepicker
-              [(ngModel)]="dataInicio"
-              dateFormat="dd/mm/yy"
-              placeholder="Selecionar data"
-              [showIcon]="true"
-              [style]="{ width: '100%' }"
-            />
-          </div>
-
-          <div class="form-field form-field--full">
-            <label class="form-label">Duração estimada (dias)</label>
-            <p-inputnumber
-              [(ngModel)]="duracaoDias"
-              [min]="1"
-              [max]="365"
-              [style]="{ width: '100%' }"
-              inputStyleClass="form-input"
-              suffix=" dias"
-            />
-          </div>
-
-          <div class="form-field form-field--full">
-            <label class="form-label">% da audiência</label>
-            <p-inputnumber
-              [(ngModel)]="audienciaPercent"
-              [min]="1"
-              [max]="100"
-              [style]="{ width: '100%' }"
-              inputStyleClass="form-input"
-              suffix="%"
-            />
-            <span class="form-hint">Porcentagem de usuários elegíveis que entrarão no experimento</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Section: Segmentação -->
-      <div class="form-card">
-        <div class="form-card-header">
-          <div class="section-icon section-icon--purple"><i class="pi pi-users"></i></div>
-          <div>
-            <h2 class="section-title">Segmentação</h2>
-            <p class="section-subtitle">Onde o experimento será exibido</p>
-          </div>
-        </div>
-
-        <div class="form-grid form-grid--single">
-          <div class="form-field form-field--full">
-            <label class="form-label">Plataformas</label>
-            <p-multiselect
-              [options]="plataformaOptions"
-              [(ngModel)]="plataformas"
-              optionLabel="label"
-              optionValue="value"
-              placeholder="Selecionar plataformas"
-              display="chip"
-              [style]="{ width: '100%' }"
-            />
-          </div>
-        </div>
-      </div>
-
-      <!-- Section: Detalhes adicionais -->
-      <div class="form-card">
-        <div class="form-card-header">
-          <div class="section-icon section-icon--gray"><i class="pi pi-info-circle"></i></div>
-          <div>
-            <h2 class="section-title">Detalhes adicionais</h2>
-            <p class="section-subtitle">Informações complementares</p>
-          </div>
-        </div>
-
-        <div class="form-grid form-grid--single">
-          <div class="form-field form-field--full">
-            <label class="form-label">Responsável</label>
-            <input pInputText [(ngModel)]="responsavel" placeholder="Nome do responsável" class="form-input" />
-          </div>
-
-          <div class="form-field form-field--full">
-            <label class="form-label">Observações</label>
-            <textarea
-              pTextarea
-              [(ngModel)]="observacoes"
-              placeholder="Contexto adicional, links, referências..."
-              rows="4"
-              class="form-input"
-              autoResize="false"
-            ></textarea>
-          </div>
-        </div>
-      </div>
-
-      <!-- Checklist summary -->
-      <div class="checklist-card">
-        <h3 class="checklist-title">Progresso do formulário</h3>
-        <ul class="checklist">
-          <li [class.done]="nome.trim()"><i class="pi" [class.pi-check-circle]="nome.trim()" [class.pi-circle]="!nome.trim()"></i> Nome do experimento</li>
-          <li [class.done]="hipotese.trim()"><i class="pi" [class.pi-check-circle]="hipotese.trim()" [class.pi-circle]="!hipotese.trim()"></i> Hipótese</li>
-          <li [class.done]="area"><i class="pi" [class.pi-check-circle]="area" [class.pi-circle]="!area"></i> Área</li>
-          <li [class.done]="controleDescricao.trim()"><i class="pi" [class.pi-check-circle]="controleDescricao.trim()" [class.pi-circle]="!controleDescricao.trim()"></i> Descrição do controle (A)</li>
-          <li [class.done]="varianteDescricao.trim()"><i class="pi" [class.pi-check-circle]="varianteDescricao.trim()" [class.pi-circle]="!varianteDescricao.trim()"></i> Descrição da variante (B)</li>
-          <li [class.done]="metricaPrincipal"><i class="pi" [class.pi-check-circle]="metricaPrincipal" [class.pi-circle]="!metricaPrincipal"></i> Métrica principal</li>
-          <li [class.done]="confianca"><i class="pi" [class.pi-check-circle]="confianca" [class.pi-circle]="!confianca"></i> Nível de confiança</li>
-        </ul>
-      </div>
-
-    </div>
-  </div>
+    </p-step-panels>
+  </p-stepper>
 
 </div>
