@@ -750,7 +750,56 @@
                 </div>
               </div>
 
-              <!-- 3. KPIs de resultado -->
+              <!-- 3. Comparativo visual -->
+              @if (winnerStat(); as winner) {
+                <div class="detail-card">
+                  <h2 class="detail-card-title"><i class="pi pi-images"></i> Comparativo visual</h2>
+                  <div class="res-visual-row">
+
+                    <!-- Controle -->
+                    <div class="res-visual-card">
+                      <div class="res-visual-header">
+                        <span class="variante-badge" [style.background]="exp.variantes[0].color">{{ exp.variantes[0].label }}</span>
+                        <span class="res-visual-nome">{{ exp.variantes[0].nome }}</span>
+                        <span class="control-tag">Controle</span>
+                      </div>
+                      <div class="res-visual-image">
+                        <i class="pi pi-image"></i>
+                        <span>Sem imagem cadastrada</span>
+                      </div>
+                      <div class="res-visual-rate">
+                        <span class="res-visual-rate-label">Taxa de conversão</span>
+                        <span class="res-visual-rate-value">{{ acompanhamento()!.taxaControle | number:'1.1-1' }}%</span>
+                      </div>
+                    </div>
+
+                    <div class="res-visual-vs">vs</div>
+
+                    <!-- Variante vencedora -->
+                    <div class="res-visual-card res-visual-card--winner">
+                      <div class="res-visual-header">
+                        <span class="variante-badge" [style.background]="winner.color">{{ winner.varianteLabel }}</span>
+                        <span class="res-visual-nome">{{ winner.varianteNome }}</span>
+                        <span class="stat-status-cell stat-status-cell--vencedor">Vencedor</span>
+                      </div>
+                      <div class="res-visual-image">
+                        <i class="pi pi-image"></i>
+                        <span>Sem imagem cadastrada</span>
+                      </div>
+                      <div class="res-visual-rate">
+                        <span class="res-visual-rate-label">Taxa de conversão</span>
+                        <div class="res-visual-rate-row">
+                          <span class="res-visual-rate-value res-visual-rate-value--winner">{{ winner.conversionRate | number:'1.1-1' }}%</span>
+                          <span class="res-visual-lift">+{{ winner.liftRelativo | number:'1.1-1' }}%</span>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              }
+
+              <!-- 4. KPIs de resultado -->
               <div class="res-kpi-row">
                 @if (rd.liftFinal != null) {
                   <div class="res-kpi-card">

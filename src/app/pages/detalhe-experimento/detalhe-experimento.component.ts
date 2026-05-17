@@ -420,6 +420,7 @@ export class DetalheExperimentoComponent {
   ];
 
   readonly resultadoData = computed(() => this.experimento()?.resultadoData ?? null);
+  readonly winnerStat    = computed(() => this.statResults().find(r => r.status === 'vencedor') ?? null);
   readonly vencedoraVariante = computed(() => {
     const rd = this.resultadoData();
     if (!rd?.varianteVencedora) return null;
