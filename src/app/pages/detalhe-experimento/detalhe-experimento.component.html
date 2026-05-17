@@ -308,104 +308,6 @@
 
               </div><!-- /acmp-top-row -->
 
-              <!-- Resultados por variante -->
-              @if (statResults().length > 0) {
-                <div class="detail-card">
-                  <h2 class="detail-card-title"><i class="pi pi-chart-bar"></i> Resultados por variante</h2>
-                  <p class="seq-info-text">Comparação de cada variante com o controle. Resultados baseados nos dados atuais — a significância pode mudar conforme mais usuários são expostos.</p>
-
-                  <div class="stat-table">
-                    <div class="stat-table-header">
-                      <span>Variante</span>
-                      <span>Taxa atual</span>
-                      <span pTooltip="Diferença em pontos percentuais entre a variante e o controle" tooltipPosition="top" class="stat-col-hint">Lift abs.</span>
-                      <span pTooltip="Diferença relativa entre a variante e o controle" tooltipPosition="top" class="stat-col-hint">Lift rel.</span>
-                      <span pTooltip="Intervalo de confiança de 95% para o lift absoluto" tooltipPosition="top" class="stat-col-hint">IC 95%</span>
-                      <span pTooltip="Probabilidade de observar este resultado por acaso assumindo que não há efeito real. Valores abaixo de 0,05 indicam significância estatística" tooltipPosition="top" class="stat-col-hint">P-valor</span>
-                      <span>Status</span>
-                    </div>
-
-                    <!-- Linha do controle -->
-                    <div class="stat-table-row stat-table-row--control">
-                      <span class="stat-var-cell">
-                        <span class="variante-badge" [style.background]="exp.variantes[0].color">{{ exp.variantes[0].label }}</span>
-                        <span class="stat-var-nome">{{ exp.variantes[0].nome }}</span>
-                        <span class="control-tag">Controle</span>
-                      </span>
-                      <span class="stat-rate">{{ acompanhamento()!.taxaControle | number:'1.1-1' }}%</span>
-                      <span class="stat-neutral">—</span>
-                      <span class="stat-neutral">—</span>
-                      <span class="stat-neutral">—</span>
-                      <span class="stat-neutral">—</span>
-                      <span class="stat-status-cell stat-status-cell--control">Referência</span>
-                    </div>
-
-                    <!-- Linhas das variantes -->
-                    @for (r of statResults(); track r.varianteLabel) {
-                      <div class="stat-table-row">
-                        <span class="stat-var-cell">
-                          <span class="variante-badge" [style.background]="r.color">{{ r.varianteLabel }}</span>
-                          <span class="stat-var-nome">{{ r.varianteNome }}</span>
-                        </span>
-                        <span class="stat-rate">{{ r.conversionRate | number:'1.1-1' }}%</span>
-                        <span class="stat-lift"
-                              [class.stat-lift--pos]="r.liftAbsoluto > 0"
-                              [class.stat-lift--neg]="r.liftAbsoluto < 0">
-                          {{ r.liftAbsoluto > 0 ? '+' : '' }}{{ r.liftAbsoluto | number:'1.1-1' }}pp
-                        </span>
-                        <span class="stat-lift"
-                              [class.stat-lift--pos]="r.liftRelativo > 0"
-                              [class.stat-lift--neg]="r.liftRelativo < 0">
-                          {{ r.liftRelativo > 0 ? '+' : '' }}{{ r.liftRelativo | number:'1.1-1' }}%
-                        </span>
-                        <span class="stat-ci"
-                              [class.stat-ci--crosses-zero]="r.ciLower < 0 && r.ciUpper > 0">
-                          [{{ r.ciLower > 0 ? '+' : '' }}{{ r.ciLower | number:'1.1-1' }}pp,&nbsp;+{{ r.ciUpper | number:'1.1-1' }}pp]
-                        </span>
-                        <span class="stat-pvalue" [class.stat-pvalue--sig]="r.pValor < 0.05">
-                          {{ r.pValor | number:'1.3-3' }}
-                        </span>
-                        <span class="stat-status-cell stat-status-cell--{{ r.status }}">
-                          {{ r.status === 'vencedor' ? 'Vencedor' : r.status === 'perdedor' ? 'Perdedor' : 'Inconclusivo' }}
-                        </span>
-                      </div>
-                    }
-                  </div>
-                </div>
-              }
-
-              <!-- Status das métricas -->
-              @if (metricasStatus().length > 0) {
-                <div class="detail-card">
-                  <h2 class="detail-card-title"><i class="pi pi-list-check"></i> Status das métricas</h2>
-                  <div class="metrics-status-list">
-                    @for (m of metricasStatus(); track m.nome) {
-                      <div class="metrics-status-item">
-                        <div class="metrics-status-left">
-                          <span class="metrics-tipo-badge metrics-tipo-badge--{{ m.tipo }}">
-                            {{ m.tipo === 'sucesso' ? 'Sucesso' : m.tipo === 'guardrail' ? 'Guardrail' : 'Secundária' }}
-                          </span>
-                          <span class="metrics-nome">{{ m.nome }}</span>
-                        </div>
-                        <span class="metrics-variacao"
-                              [class.metrics-variacao--pos]="m.variacao.startsWith('+')"
-                              [class.metrics-variacao--neg]="m.variacao.startsWith('-')">
-                          {{ m.variacao }}
-                        </span>
-                        <span class="metrics-descricao">{{ m.descricao }}</span>
-                        <span class="metrics-status-badge metrics-status-badge--{{ m.status }}">
-                          <i class="pi"
-                             [class.pi-check-circle]="m.status === 'ok'"
-                             [class.pi-exclamation-triangle]="m.status === 'warning'"
-                             [class.pi-minus-circle]="m.status === 'neutral'"></i>
-                          {{ m.status === 'ok' ? 'Ok' : m.status === 'warning' ? 'Atenção' : 'Neutro' }}
-                        </span>
-                      </div>
-                    }
-                  </div>
-                </div>
-              }
-
               <!-- Saúde do experimento -->
               <div class="detail-card">
                 <h2 class="detail-card-title"><i class="pi pi-shield"></i> Saúde do experimento</h2>
@@ -564,6 +466,62 @@
                 </div>
               }
 
+              <!-- Projeção de encerramento -->
+              @if (projecao(); as proj) {
+                <div class="detail-card">
+                  <h2 class="detail-card-title"><i class="pi pi-calendar"></i> Projeção de encerramento</h2>
+
+                  <div class="proj-stats-row">
+                    <div class="proj-stat">
+                      <span class="proj-stat-label">Ritmo atual</span>
+                      <span class="proj-stat-value">{{ proj.usuariosPorDia | number }} usu./dia</span>
+                    </div>
+                    <div class="proj-stat">
+                      <span class="proj-stat-label">Dias restantes</span>
+                      <span class="proj-stat-value">~{{ proj.diasRestantesProjetados }} dias</span>
+                    </div>
+                    <div class="proj-stat">
+                      <span class="proj-stat-label">Data projetada</span>
+                      <span class="proj-stat-value">{{ proj.dataProjetada }}</span>
+                    </div>
+                    <span class="proj-diff-badge"
+                          [class.proj-diff-badge--ahead]="proj.diffDiasEstimativa < 0"
+                          [class.proj-diff-badge--on-track]="proj.diffDiasEstimativa === 0"
+                          [class.proj-diff-badge--behind]="proj.diffDiasEstimativa > 0">
+                      <i class="pi"
+                         [class.pi-arrow-up-right]="proj.diffDiasEstimativa < 0"
+                         [class.pi-minus]="proj.diffDiasEstimativa === 0"
+                         [class.pi-arrow-down-right]="proj.diffDiasEstimativa > 0"></i>
+                      {{ proj.diffDiasEstimativa === 0 ? 'No prazo' : proj.diffDiasEstimativa < 0 ? (proj.diffDiasEstimativa * -1) + ' dias adiantado' : proj.diffDiasEstimativa + ' dias de atraso' }}
+                    </span>
+                  </div>
+
+                  @if (proj.looksProjecao.length > 0) {
+                    <div class="proj-early-section">
+                      <span class="detail-label">Probabilidade de encerramento antecipado</span>
+                      <div class="proj-looks-list">
+                        @for (look of proj.looksProjecao; track look.lookNumber) {
+                          <div class="proj-look-row">
+                            <span class="proj-look-label">Look {{ look.lookNumber }}</span>
+                            <div class="proj-look-bar-track">
+                              <div class="proj-look-bar-fill"
+                                   [style.width.%]="look.probabilidade"
+                                   [class.proj-look-bar-fill--low]="look.probabilidade < 30"
+                                   [class.proj-look-bar-fill--mid]="look.probabilidade >= 30 && look.probabilidade < 60"
+                                   [class.proj-look-bar-fill--high]="look.probabilidade >= 60"></div>
+                            </div>
+                            <span class="proj-look-pct">{{ look.probabilidade }}%</span>
+                            <span class="proj-look-date">
+                              <i class="pi pi-calendar detail-icon"></i> {{ look.dataEstimada }}
+                            </span>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+
               <!-- Gráfico de taxa de conversão -->
               <div class="detail-card">
                 <h2 class="detail-card-title"><i class="pi pi-chart-line"></i> Taxa de conversão ao longo do tempo</h2>
@@ -574,6 +532,104 @@
                   </div>
                 }
               </div>
+
+              <!-- Resultados por variante -->
+              @if (statResults().length > 0) {
+                <div class="detail-card">
+                  <h2 class="detail-card-title"><i class="pi pi-chart-bar"></i> Resultados por variante</h2>
+                  <p class="seq-info-text">Comparação de cada variante com o controle. Resultados baseados nos dados atuais — a significância pode mudar conforme mais usuários são expostos.</p>
+
+                  <div class="stat-table">
+                    <div class="stat-table-header">
+                      <span>Variante</span>
+                      <span>Taxa atual</span>
+                      <span pTooltip="Diferença em pontos percentuais entre a variante e o controle" tooltipPosition="top" class="stat-col-hint">Lift abs.</span>
+                      <span pTooltip="Diferença relativa entre a variante e o controle" tooltipPosition="top" class="stat-col-hint">Lift rel.</span>
+                      <span pTooltip="Intervalo de confiança de 95% para o lift absoluto" tooltipPosition="top" class="stat-col-hint">IC 95%</span>
+                      <span pTooltip="Probabilidade de observar este resultado por acaso assumindo que não há efeito real. Valores abaixo de 0,05 indicam significância estatística" tooltipPosition="top" class="stat-col-hint">P-valor</span>
+                      <span>Status</span>
+                    </div>
+
+                    <!-- Linha do controle -->
+                    <div class="stat-table-row stat-table-row--control">
+                      <span class="stat-var-cell">
+                        <span class="variante-badge" [style.background]="exp.variantes[0].color">{{ exp.variantes[0].label }}</span>
+                        <span class="stat-var-nome">{{ exp.variantes[0].nome }}</span>
+                        <span class="control-tag">Controle</span>
+                      </span>
+                      <span class="stat-rate">{{ acompanhamento()!.taxaControle | number:'1.1-1' }}%</span>
+                      <span class="stat-neutral">—</span>
+                      <span class="stat-neutral">—</span>
+                      <span class="stat-neutral">—</span>
+                      <span class="stat-neutral">—</span>
+                      <span class="stat-status-cell stat-status-cell--control">Referência</span>
+                    </div>
+
+                    <!-- Linhas das variantes -->
+                    @for (r of statResults(); track r.varianteLabel) {
+                      <div class="stat-table-row">
+                        <span class="stat-var-cell">
+                          <span class="variante-badge" [style.background]="r.color">{{ r.varianteLabel }}</span>
+                          <span class="stat-var-nome">{{ r.varianteNome }}</span>
+                        </span>
+                        <span class="stat-rate">{{ r.conversionRate | number:'1.1-1' }}%</span>
+                        <span class="stat-lift"
+                              [class.stat-lift--pos]="r.liftAbsoluto > 0"
+                              [class.stat-lift--neg]="r.liftAbsoluto < 0">
+                          {{ r.liftAbsoluto > 0 ? '+' : '' }}{{ r.liftAbsoluto | number:'1.1-1' }}pp
+                        </span>
+                        <span class="stat-lift"
+                              [class.stat-lift--pos]="r.liftRelativo > 0"
+                              [class.stat-lift--neg]="r.liftRelativo < 0">
+                          {{ r.liftRelativo > 0 ? '+' : '' }}{{ r.liftRelativo | number:'1.1-1' }}%
+                        </span>
+                        <span class="stat-ci"
+                              [class.stat-ci--crosses-zero]="r.ciLower < 0 && r.ciUpper > 0">
+                          [{{ r.ciLower > 0 ? '+' : '' }}{{ r.ciLower | number:'1.1-1' }}pp,&nbsp;+{{ r.ciUpper | number:'1.1-1' }}pp]
+                        </span>
+                        <span class="stat-pvalue" [class.stat-pvalue--sig]="r.pValor < 0.05">
+                          {{ r.pValor | number:'1.3-3' }}
+                        </span>
+                        <span class="stat-status-cell stat-status-cell--{{ r.status }}">
+                          {{ r.status === 'vencedor' ? 'Vencedor' : r.status === 'perdedor' ? 'Perdedor' : 'Inconclusivo' }}
+                        </span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+
+              <!-- Status das métricas -->
+              @if (metricasStatus().length > 0) {
+                <div class="detail-card">
+                  <h2 class="detail-card-title"><i class="pi pi-list-check"></i> Status das métricas</h2>
+                  <div class="metrics-status-list">
+                    @for (m of metricasStatus(); track m.nome) {
+                      <div class="metrics-status-item">
+                        <div class="metrics-status-left">
+                          <span class="metrics-tipo-badge metrics-tipo-badge--{{ m.tipo }}">
+                            {{ m.tipo === 'sucesso' ? 'Sucesso' : m.tipo === 'guardrail' ? 'Guardrail' : 'Secundária' }}
+                          </span>
+                          <span class="metrics-nome">{{ m.nome }}</span>
+                        </div>
+                        <span class="metrics-variacao"
+                              [class.metrics-variacao--pos]="m.variacao.startsWith('+')"
+                              [class.metrics-variacao--neg]="m.variacao.startsWith('-')">
+                          {{ m.variacao }}
+                        </span>
+                        <span class="metrics-descricao">{{ m.descricao }}</span>
+                        <span class="metrics-status-badge metrics-status-badge--{{ m.status }}">
+                          <i class="pi"
+                             [class.pi-check-circle]="m.status === 'ok'"
+                             [class.pi-exclamation-triangle]="m.status === 'warning'"
+                             [class.pi-minus-circle]="m.status === 'neutral'"></i>
+                          {{ m.status === 'ok' ? 'Ok' : m.status === 'warning' ? 'Atenção' : 'Neutro' }}
+                        </span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
 
               <!-- Feed de eventos -->
               @if (eventos().length > 0) {

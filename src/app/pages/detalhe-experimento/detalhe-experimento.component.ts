@@ -50,6 +50,20 @@ interface EventoFeed {
   descricao?: string;
 }
 
+interface ProjecaoLook {
+  lookNumber: number;
+  probabilidade: number;
+  dataEstimada: string;
+}
+
+interface ProjecaoEncerramento {
+  usuariosPorDia: number;
+  diasRestantesProjetados: number;
+  dataProjetada: string;
+  diffDiasEstimativa: number; // negativo = adiantado, positivo = atrasado
+  looksProjecao: ProjecaoLook[];
+}
+
 interface StatResult {
   varianteLabel: string;
   varianteNome: string;
@@ -83,6 +97,7 @@ interface AcompanhamentoData {
   statResults: StatResult[];
   metricasStatus: MetricaStatus[];
   eventos: EventoFeed[];
+  projecao: ProjecaoEncerramento;
 }
 
 interface ExperimentoDetalhe {
@@ -136,7 +151,7 @@ const MOCK_EXPERIMENTOS: ExperimentoDetalhe[] = [
     trafficSplit: [50, 50],
     variantes: [
       { label: 'A', nome: 'Controle (A)', descricao: 'Fluxo padrão de confirmação com etapa de revisão antes do envio.', params: [{ key: 'skip_review', value: 'false' }], trafficPct: 50, color: '#fb923c' },
-      { label: 'B', nome: 'Variante (B)', descricao: 'Fluxo sem etapa de revisão para contatos com mais de 3 transações nos últimos 30 dias.', params: [{ key: 'skip_review', value: 'true' }, { key: 'min_transactions', value: '3' }], trafficPct: 50, color: '#f48937' },
+      { label: 'B', nome: 'Variante (B)', descricao: 'Fluxo sem etapa de revisão para contatos com mais de 3 transações nos últimos 30 dias.', params: [{ key: 'skip_review', value: 'true' }, { key: 'min_transactions', value: '3' }], trafficPct: 50, color: '#3b82f6' },
     ],
     metricasSucesso: ['conversion_rate'],
     metricasGuardrail: ['nps_score'],
@@ -154,17 +169,17 @@ const MOCK_EXPERIMENTOS: ExperimentoDetalhe[] = [
       usuariosExpostos: 4812,
       porVariante: [
         { label: 'A', count: 2394, color: '#fb923c', trafficPct: 50 },
-        { label: 'B', count: 2418, color: '#f48937', trafficPct: 50 },
+        { label: 'B', count: 2418, color: '#3b82f6', trafficPct: 50 },
       ],
       taxaControle: 5.1,
       doubleBucketing: 0,
       timeLabels: ['01/05', '02/05', '03/05', '04/05', '05/05', '06/05', '07/05', '08/05'],
       conversionRates: [
         { label: 'Controle (A)', color: '#fb923c', data: [4.2, 4.8, 4.9, 5.1, 5.0, 5.2, 5.1, 5.1] },
-        { label: 'Variante (B)', color: '#f48937', data: [5.1, 5.6, 5.9, 6.1, 6.0, 6.2, 6.3, 6.2] },
+        { label: 'Variante (B)', color: '#3b82f6', data: [5.1, 5.6, 5.9, 6.1, 6.0, 6.2, 6.3, 6.2] },
       ],
       statResults: [
-        { varianteLabel: 'B', varianteNome: 'Variante (B)', color: '#f48937', conversionRate: 6.2, liftAbsoluto: 1.1, liftRelativo: 21.6, ciLower: -0.1, ciUpper: 2.3, pValor: 0.062, status: 'inconclusivo' },
+        { varianteLabel: 'B', varianteNome: 'Variante (B)', color: '#3b82f6', conversionRate: 6.2, liftAbsoluto: 1.1, liftRelativo: 21.6, ciLower: -0.1, ciUpper: 2.3, pValor: 0.062, status: 'inconclusivo' },
       ],
       metricasStatus: [
         { nome: 'conversion_rate', tipo: 'sucesso',    status: 'ok',      variacao: '+21.6%', descricao: 'Melhoria observada na variante B' },
@@ -180,6 +195,16 @@ const MOCK_EXPERIMENTOS: ExperimentoDetalhe[] = [
         { data: '02/05/2026', tipo: 'success',   titulo: 'Primeiros usuários expostos',  descricao: 'Experimento ativo e distribuindo tráfego normalmente.' },
         { data: '01/05/2026', tipo: 'milestone', titulo: 'Experimento iniciado',          descricao: 'PIX Turbo — confirmação em 1 etapa para contatos frequentes.' },
       ],
+      projecao: {
+        usuariosPorDia: 602,
+        diasRestantesProjetados: 5,
+        dataProjetada: '13/05/2026',
+        diffDiasEstimativa: -2,
+        looksProjecao: [
+          { lookNumber: 3, probabilidade: 38, dataEstimada: '12/05/2026' },
+          { lookNumber: 4, probabilidade: 61, dataEstimada: '13/05/2026' },
+        ],
+      },
     },
     sequentialTest: {
       nLooks: 4,
@@ -211,8 +236,8 @@ const MOCK_EXPERIMENTOS: ExperimentoDetalhe[] = [
     trafficSplit: [34, 33, 33],
     variantes: [
       { label: 'A', nome: 'Controle (A)', descricao: 'Home padrão sem personalização.', params: [], trafficPct: 34, color: '#fb923c' },
-      { label: 'B', nome: 'Variante (B)', descricao: 'Home com módulos reordenados por frequência de uso.', params: [{ key: 'layout', value: 'frequency' }], trafficPct: 33, color: '#f48937' },
-      { label: 'C', nome: 'Variante (C)', descricao: 'Home com módulos reordenados por valor financeiro das ações.', params: [{ key: 'layout', value: 'value' }], trafficPct: 33, color: '#ee8031' },
+      { label: 'B', nome: 'Variante (B)', descricao: 'Home com módulos reordenados por frequência de uso.', params: [{ key: 'layout', value: 'frequency' }], trafficPct: 33, color: '#3b82f6' },
+      { label: 'C', nome: 'Variante (C)', descricao: 'Home com módulos reordenados por valor financeiro das ações.', params: [{ key: 'layout', value: 'value' }], trafficPct: 33, color: '#8b5cf6' },
     ],
     metricasSucesso: ['session_duration'],
     metricasGuardrail: ['error_rate'],
@@ -230,20 +255,20 @@ const MOCK_EXPERIMENTOS: ExperimentoDetalhe[] = [
       usuariosExpostos: 9126,
       porVariante: [
         { label: 'A', count: 3108, color: '#fb923c', trafficPct: 34 },
-        { label: 'B', count: 3012, color: '#f48937', trafficPct: 33 },
-        { label: 'C', count: 3006, color: '#ee8031', trafficPct: 33 },
+        { label: 'B', count: 3012, color: '#3b82f6', trafficPct: 33 },
+        { label: 'C', count: 3006, color: '#8b5cf6', trafficPct: 33 },
       ],
       taxaControle: 8.1,
       doubleBucketing: 28,
       timeLabels: ['15/04', '16/04', '17/04', '18/04', '19/04', '20/04', '21/04', '22/04', '23/04', '24/04', '25/04', '26/04'],
       conversionRates: [
         { label: 'Controle (A)', color: '#fb923c', data: [7.2, 7.8, 8.1, 8.0, 8.2, 8.1, 8.3, 8.1, 8.0, 8.2, 8.1, 8.1] },
-        { label: 'Variante (B)', color: '#f48937', data: [8.3, 8.7, 9.0, 8.9, 9.1, 9.0, 9.2, 9.1, 9.0, 9.1, 9.0, 9.0] },
-        { label: 'Variante (C)', color: '#ee8031', data: [7.8, 8.2, 8.4, 8.5, 8.4, 8.6, 8.5, 8.4, 8.5, 8.4, 8.5, 8.5] },
+        { label: 'Variante (B)', color: '#3b82f6', data: [8.3, 8.7, 9.0, 8.9, 9.1, 9.0, 9.2, 9.1, 9.0, 9.1, 9.0, 9.0] },
+        { label: 'Variante (C)', color: '#8b5cf6', data: [7.8, 8.2, 8.4, 8.5, 8.4, 8.6, 8.5, 8.4, 8.5, 8.4, 8.5, 8.5] },
       ],
       statResults: [
-        { varianteLabel: 'B', varianteNome: 'Variante (B)', color: '#f48937', conversionRate: 9.0, liftAbsoluto: 0.9, liftRelativo: 11.1, ciLower: -0.1, ciUpper: 1.9, pValor: 0.084, status: 'inconclusivo' },
-        { varianteLabel: 'C', varianteNome: 'Variante (C)', color: '#ee8031', conversionRate: 8.5, liftAbsoluto: 0.4, liftRelativo:  4.9, ciLower: -0.5, ciUpper: 1.3, pValor: 0.379, status: 'inconclusivo' },
+        { varianteLabel: 'B', varianteNome: 'Variante (B)', color: '#3b82f6', conversionRate: 9.0, liftAbsoluto: 0.9, liftRelativo: 11.1, ciLower: -0.1, ciUpper: 1.9, pValor: 0.084, status: 'inconclusivo' },
+        { varianteLabel: 'C', varianteNome: 'Variante (C)', color: '#8b5cf6', conversionRate: 8.5, liftAbsoluto: 0.4, liftRelativo:  4.9, ciLower: -0.5, ciUpper: 1.3, pValor: 0.379, status: 'inconclusivo' },
       ],
       metricasStatus: [
         { nome: 'session_duration', tipo: 'sucesso',    status: 'ok',      variacao: '+11.1%', descricao: 'Melhoria observada na variante B' },
@@ -259,6 +284,16 @@ const MOCK_EXPERIMENTOS: ExperimentoDetalhe[] = [
         { data: '16/04/2026', tipo: 'success',   titulo: 'Primeiros usuários expostos',     descricao: 'Experimento ativo e distribuindo tráfego normalmente.' },
         { data: '15/04/2026', tipo: 'milestone', titulo: 'Experimento iniciado',            descricao: 'Home personalizada por padrão de uso — v2.' },
       ],
+      projecao: {
+        usuariosPorDia: 761,
+        diasRestantesProjetados: 9,
+        dataProjetada: '06/05/2026',
+        diffDiasEstimativa: 0,
+        looksProjecao: [
+          { lookNumber: 3, probabilidade: 24, dataEstimada: '30/04/2026' },
+          { lookNumber: 4, probabilidade: 45, dataEstimada: '06/05/2026' },
+        ],
+      },
     },
     sequentialTest: {
       nLooks: 4,
@@ -330,6 +365,7 @@ export class DetalheExperimentoComponent {
     return ((ac.doubleBucketing / ac.usuariosExpostos) * 100).toFixed(2);
   });
 
+  readonly projecao       = computed(() => this.acompanhamento()?.projecao       ?? null);
   readonly statResults    = computed(() => this.acompanhamento()?.statResults    ?? []);
   readonly metricasStatus = computed(() => this.acompanhamento()?.metricasStatus ?? []);
   readonly eventos        = computed(() => this.acompanhamento()?.eventos        ?? []);
