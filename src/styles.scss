@@ -45,3 +45,18 @@ body {
 .p-tooltip .p-tooltip-text {
   font-size: 0.75rem;
 }
+
+.p-menu .decisao-item--green .p-menu-item-link {
+  color: #16a34a !important;
+  .p-menu-item-icon { color: #16a34a !important; }
+}
+
+.p-menu .decisao-item--amber .p-menu-item-link {
+  color: #d97706 !important;
+  .p-menu-item-icon { color: #d97706 !important; }
+}
+
+.p-menu .decisao-item--blue .p-menu-item-link {
+  color: #2563eb !important;
+  .p-menu-item-icon { color: #2563eb !important; }
+}

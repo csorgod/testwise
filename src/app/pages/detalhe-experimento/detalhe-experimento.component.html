@@ -679,10 +679,288 @@
 
         <!-- ══ Resultado ════════════════════════════════════════ -->
         <p-tabpanel value="resultado">
-          <div class="tab-empty">
-            <i class="pi pi-trophy"></i>
-            <p>Os resultados do experimento estarão disponíveis após a conclusão.</p>
-          </div>
+          @if (resultadoData(); as rd) {
+            <div class="res-sidebar">
+              <div class="detail-card">
+                <h2 class="detail-card-title"><i class="pi pi-arrow-right-arrow-left"></i> Próximos passos</h2>
+                <div class="res-actions-col">
+                  @if (rd.recomendacao === 'rollout') {
+                    <p-button label="Tomar decisão" icon="pi pi-chevron-down" iconPos="right"
+                              [outlined]="true" styleClass="res-decision-btn"
+                              (click)="decisaoMenu.toggle($event)" />
+                    <p-menu #decisaoMenu [popup]="true" [model]="decisaoMenuItems" appendTo="body" />
+                  }
+                  <p-button label="Exportar relatório" icon="pi pi-download" [outlined]="true" severity="secondary" styleClass="w-full" />
+                </div>
+              </div>
+            </div>
+            <div class="tab-body">
+
+              <!-- 1. Hero do resultado -->
+              <div class="res-hero res-hero--{{ rd.veredito }}">
+                <div class="res-hero-icon">
+                  <i class="pi"
+                     [class.pi-trophy]="rd.veredito === 'vencedor'"
+                     [class.pi-question-circle]="rd.veredito === 'inconclusivo'"
+                     [class.pi-times-circle]="rd.veredito === 'futilidade'"></i>
+                </div>
+                <div class="res-hero-body">
+                  <div class="res-hero-label">
+                    {{ rd.veredito === 'vencedor' ? 'Experimento concluído com sucesso' : rd.veredito === 'futilidade' ? 'Encerrado por futilidade' : 'Resultado inconclusivo' }}
+                  </div>
+                  <h2 class="res-hero-title">
+                    @if (rd.varianteVencedora) {
+                      Variante {{ rd.varianteVencedora }} vencedora com +{{ rd.liftRelativoFinal }}% de lift
+                    } @else if (rd.veredito === 'inconclusivo') {
+                      Nenhuma variante apresentou resultado significativo
+                    } @else {
+                      Experimento encerrado por futilidade — sem efeito detectável
+                    }
+                  </h2>
+                  <p class="res-hero-sub">
+                    Confiança estatística de <strong>{{ rd.confidencia }}%</strong>
+                    @if (rd.lookFinalNumber) {
+                      &nbsp;·&nbsp; Encerrado antecipadamente no Look {{ rd.lookFinalNumber }} de {{ seqTest()?.nLooks }}
+                    }
+                  </p>
+                  <span class="res-hero-meta">
+                    <i class="pi pi-calendar detail-icon"></i> {{ rd.dataEncerramento }}
+                    &nbsp;·&nbsp; {{ rd.duracaoReal }} dias de duração
+                    &nbsp;·&nbsp; {{ rd.usuariosTotais | number }} usuários expostos
+                  </span>
+                </div>
+              </div>
+
+              <!-- 2. Resumo executivo -->
+              <div class="detail-card res-summary-card">
+                <div class="res-summary-header">
+                  <span class="res-ai-badge"><i class="pi pi-sparkles"></i> IA</span>
+                  <span class="res-summary-label">Resumo executivo</span>
+                </div>
+                <p class="res-summary-text">{{ rd.resumoExecutivo }}</p>
+                <div class="res-recomendacao-row">
+                  <span class="res-recomendacao-label">Recomendação:</span>
+                  <span class="res-recomendacao-badge res-recomendacao-badge--{{ rd.recomendacao }}">
+                    <i class="pi"
+                       [class.pi-check-circle]="rd.recomendacao === 'rollout'"
+                       [class.pi-times-circle]="rd.recomendacao === 'descartar'"
+                       [class.pi-search]="rd.recomendacao === 'investigar'"></i>
+                    {{ rd.recomendacao === 'rollout' ? 'Rollout para 100% da base' : rd.recomendacao === 'descartar' ? 'Descartar variante' : 'Investigar mais' }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- 3. KPIs de resultado -->
+              <div class="res-kpi-row">
+                @if (rd.liftFinal != null) {
+                  <div class="res-kpi-card">
+                    <span class="res-kpi-label">Lift absoluto</span>
+                    <span class="res-kpi-value res-kpi-value--pos">+{{ rd.liftFinal | number:'1.1-1' }}pp</span>
+                    <span class="res-kpi-sub">vs. Controle</span>
+                  </div>
+                }
+                @if (rd.liftRelativoFinal != null) {
+                  <div class="res-kpi-card">
+                    <span class="res-kpi-label">Lift relativo</span>
+                    <span class="res-kpi-value res-kpi-value--pos">+{{ rd.liftRelativoFinal | number:'1.1-1' }}%</span>
+                    <span class="res-kpi-sub">na taxa de conversão</span>
+                  </div>
+                }
+                @if (rd.pValorFinal != null) {
+                  <div class="res-kpi-card">
+                    <span class="res-kpi-label">P-valor final</span>
+                    <span class="res-kpi-value" [class.res-kpi-value--sig]="rd.pValorFinal < 0.05">{{ rd.pValorFinal | number:'1.3-3' }}</span>
+                    <span class="res-kpi-sub">{{ rd.pValorFinal < 0.05 ? 'Estatisticamente significativo' : 'Não significativo' }}</span>
+                  </div>
+                }
+                <div class="res-kpi-card">
+                  <span class="res-kpi-label">Usuários expostos</span>
+                  <span class="res-kpi-value">{{ rd.usuariosTotais | number }}</span>
+                  <span class="res-kpi-sub">de {{ exp.totalUsers | number }} necessários</span>
+                </div>
+                <div class="res-kpi-card">
+                  <span class="res-kpi-label">Duração real</span>
+                  <span class="res-kpi-value">{{ rd.duracaoReal }} dias</span>
+                  <span class="res-kpi-sub">de {{ exp.diasEstimados }} estimados</span>
+                </div>
+              </div>
+
+              <!-- 4. Comparativo final por variante -->
+              @if (statResults().length > 0) {
+                <div class="detail-card">
+                  <h2 class="detail-card-title"><i class="pi pi-chart-bar"></i> Comparativo final por variante</h2>
+                  <div class="stat-table">
+                    <div class="stat-table-header">
+                      <span>Variante</span>
+                      <span>Taxa final</span>
+                      <span class="stat-col-hint" pTooltip="Diferença em pontos percentuais entre a variante e o controle" tooltipPosition="top">Lift abs.</span>
+                      <span class="stat-col-hint" pTooltip="Diferença relativa entre a variante e o controle" tooltipPosition="top">Lift rel.</span>
+                      <span class="stat-col-hint" pTooltip="Intervalo de confiança de 95% para o lift absoluto" tooltipPosition="top">IC 95%</span>
+                      <span class="stat-col-hint" pTooltip="P-valor final do teste estatístico" tooltipPosition="top">P-valor</span>
+                      <span>Resultado</span>
+                    </div>
+                    <div class="stat-table-row stat-table-row--control">
+                      <span class="stat-var-cell">
+                        <span class="variante-badge" [style.background]="exp.variantes[0].color">{{ exp.variantes[0].label }}</span>
+                        <span class="stat-var-nome">{{ exp.variantes[0].nome }}</span>
+                        <span class="control-tag">Controle</span>
+                      </span>
+                      <span class="stat-rate">{{ acompanhamento()!.taxaControle | number:'1.1-1' }}%</span>
+                      <span class="stat-neutral">—</span>
+                      <span class="stat-neutral">—</span>
+                      <span class="stat-neutral">—</span>
+                      <span class="stat-neutral">—</span>
+                      <span class="stat-status-cell stat-status-cell--control">Referência</span>
+                    </div>
+                    @for (r of statResults(); track r.varianteLabel) {
+                      <div class="stat-table-row" [class.stat-table-row--winner]="r.status === 'vencedor'">
+                        <span class="stat-var-cell">
+                          <span class="variante-badge" [style.background]="r.color">{{ r.varianteLabel }}</span>
+                          <span class="stat-var-nome">{{ r.varianteNome }}</span>
+                          @if (r.status === 'vencedor') {
+                            <i class="pi pi-trophy" style="color: #16a34a; font-size: 0.78rem"></i>
+                          }
+                        </span>
+                        <span class="stat-rate">{{ r.conversionRate | number:'1.1-1' }}%</span>
+                        <span class="stat-lift"
+                              [class.stat-lift--pos]="r.liftAbsoluto > 0"
+                              [class.stat-lift--neg]="r.liftAbsoluto < 0">
+                          {{ r.liftAbsoluto > 0 ? '+' : '' }}{{ r.liftAbsoluto | number:'1.1-1' }}pp
+                        </span>
+                        <span class="stat-lift"
+                              [class.stat-lift--pos]="r.liftRelativo > 0"
+                              [class.stat-lift--neg]="r.liftRelativo < 0">
+                          {{ r.liftRelativo > 0 ? '+' : '' }}{{ r.liftRelativo | number:'1.1-1' }}%
+                        </span>
+                        <span class="stat-ci"
+                              [class.stat-ci--crosses-zero]="r.ciLower < 0 && r.ciUpper > 0">
+                          [{{ r.ciLower > 0 ? '+' : '' }}{{ r.ciLower | number:'1.1-1' }}pp,&nbsp;+{{ r.ciUpper | number:'1.1-1' }}pp]
+                        </span>
+                        <span class="stat-pvalue" [class.stat-pvalue--sig]="r.pValor < 0.05">
+                          {{ r.pValor | number:'1.3-3' }}
+                        </span>
+                        <span class="stat-status-cell stat-status-cell--{{ r.status }}">
+                          {{ r.status === 'vencedor' ? 'Vencedor' : r.status === 'perdedor' ? 'Perdedor' : 'Inconclusivo' }}
+                        </span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+
+              <!-- 5. Gráfico de evolução -->
+              <div class="detail-card">
+                <h2 class="detail-card-title"><i class="pi pi-chart-line"></i> Evolução da taxa de conversão</h2>
+                @if (chartData()) {
+                  <div class="acmp-chart-wrapper">
+                    <p-chart type="line" [data]="chartData()" [options]="chartOptions"
+                             [style]="{'height': '280px', 'width': '100%'}" />
+                  </div>
+                }
+              </div>
+
+              <!-- 6. Encerramento pelo teste sequencial -->
+              @if (seqTest(); as seq) {
+                @if (rd.lookFinalNumber) {
+                  <div class="detail-card">
+                    <h2 class="detail-card-title"><i class="pi pi-fast-forward"></i> Encerramento pelo teste sequencial</h2>
+                    <p class="seq-info-text">O experimento foi encerrado antes do prazo previsto após o Z-score observado cruzar a fronteira de sucesso, sem necessidade de coletar toda a amostra planejada.</p>
+                    <div class="res-seq-row">
+                      <div class="res-seq-stat">
+                        <span class="proj-stat-label">Look de encerramento</span>
+                        <span class="proj-stat-value">Look {{ rd.lookFinalNumber }} de {{ seq.nLooks }}</span>
+                      </div>
+                      <div class="res-seq-stat">
+                        <span class="proj-stat-label">Z-score vs Fronteira</span>
+                        <div class="res-seq-comparison">
+                          <span class="res-seq-comparison-zscore">{{ seq.interimLooks[rd.lookFinalNumber - 1]?.zScore | number:'1.2-2' }}</span>
+                          <span class="res-seq-comparison-sep">›</span>
+                          <span class="res-seq-comparison-bound">{{ seq.interimLooks[rd.lookFinalNumber - 1]?.upperBound | number:'1.2-2' }}</span>
+                          <i class="pi pi-check-circle res-seq-comparison-check"></i>
+                        </div>
+                      </div>
+                      <div class="res-seq-stat">
+                        <span class="proj-stat-label">Amostra economizada</span>
+                        <span class="proj-stat-value">{{ 100 - seq.interimLooks[rd.lookFinalNumber - 1]!.targetSamplePct }}% não coletado</span>
+                      </div>
+                      <div class="res-seq-stat">
+                        <span class="proj-stat-label">Dias economizados</span>
+                        <span class="proj-stat-value">{{ exp.diasEstimados! - rd.duracaoReal }} dias</span>
+                      </div>
+                    </div>
+                  </div>
+                }
+              }
+
+              <!-- 7. Status final das métricas -->
+              @if (metricasStatus().length > 0) {
+                <div class="detail-card">
+                  <h2 class="detail-card-title"><i class="pi pi-list-check"></i> Status final das métricas</h2>
+                  <div class="metrics-status-list">
+                    @for (m of metricasStatus(); track m.nome) {
+                      <div class="metrics-status-item">
+                        <div class="metrics-status-left">
+                          <span class="metrics-tipo-badge metrics-tipo-badge--{{ m.tipo }}">
+                            {{ m.tipo === 'sucesso' ? 'Sucesso' : m.tipo === 'guardrail' ? 'Guardrail' : 'Secundária' }}
+                          </span>
+                          <span class="metrics-nome">{{ m.nome }}</span>
+                        </div>
+                        <span class="metrics-variacao"
+                              [class.metrics-variacao--pos]="m.variacao.startsWith('+')"
+                              [class.metrics-variacao--neg]="m.variacao.startsWith('-')">
+                          {{ m.variacao }}
+                        </span>
+                        <span class="metrics-descricao">{{ m.descricao }}</span>
+                        <span class="metrics-status-badge metrics-status-badge--{{ m.status }}">
+                          <i class="pi"
+                             [class.pi-check-circle]="m.status === 'ok'"
+                             [class.pi-exclamation-triangle]="m.status === 'warning'"
+                             [class.pi-minus-circle]="m.status === 'neutral'"></i>
+                          {{ m.status === 'ok' ? 'Ok' : m.status === 'warning' ? 'Atenção' : 'Neutro' }}
+                        </span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+
+              <!-- 8. Linha do tempo -->
+              @if (eventos().length > 0) {
+                <div class="detail-card">
+                  <h2 class="detail-card-title"><i class="pi pi-history"></i> Linha do tempo</h2>
+                  <div class="res-feed-list">
+                    @for (ev of eventos(); track $index; let last = $last) {
+                      <div class="feed-item" [class.feed-item--last]="last">
+                        <div class="feed-dot feed-dot--{{ ev.tipo }}">
+                          <i class="pi"
+                             [class.pi-info-circle]="ev.tipo === 'info'"
+                             [class.pi-check-circle]="ev.tipo === 'success'"
+                             [class.pi-exclamation-triangle]="ev.tipo === 'warning'"
+                             [class.pi-flag]="ev.tipo === 'milestone'"></i>
+                        </div>
+                        <div class="feed-content">
+                          <div class="feed-header">
+                            <span class="feed-titulo">{{ ev.titulo }}</span>
+                            <span class="feed-data">{{ ev.data }}</span>
+                          </div>
+                          @if (ev.descricao) {
+                            <p class="feed-descricao">{{ ev.descricao }}</p>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+
+
+            </div>
+          } @else {
+            <div class="tab-empty">
+              <i class="pi pi-trophy"></i>
+              <p>Os resultados do experimento estarão disponíveis após a conclusão.</p>
+            </div>
+          }
         </p-tabpanel>
 
       </p-tabpanels>

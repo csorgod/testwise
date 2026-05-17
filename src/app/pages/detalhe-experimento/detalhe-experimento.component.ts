@@ -6,6 +6,8 @@ import { TagModule } from 'primeng/tag';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
 import { ChartModule } from 'primeng/chart';
+import { Menu } from 'primeng/menu';
+import { MenuItem } from 'primeng/api';
 
 interface Param { key: string; value: string; }
 
@@ -85,6 +87,23 @@ interface MetricaStatus {
   descricao: string;
 }
 
+interface ResultadoData {
+  dataEncerramento: string;
+  duracaoReal: number;
+  usuariosTotais: number;
+  veredito: 'vencedor' | 'inconclusivo' | 'futilidade';
+  varianteVencedora?: string;
+  liftFinal?: number;
+  liftRelativoFinal?: number;
+  pValorFinal?: number;
+  ciLowerFinal?: number;
+  ciUpperFinal?: number;
+  confidencia: number;
+  resumoExecutivo: string;
+  recomendacao: 'rollout' | 'descartar' | 'investigar';
+  lookFinalNumber?: number;
+}
+
 interface AcompanhamentoData {
   diasDecorridos: number;
   dataEstimadaFim: string;
@@ -130,6 +149,7 @@ interface ExperimentoDetalhe {
   diasEstimados: number | null;
   acompanhamento?: AcompanhamentoData;
   sequentialTest?: SequentialTestData;
+  resultadoData?: ResultadoData;
 }
 
 const MOCK_EXPERIMENTOS: ExperimentoDetalhe[] = [
@@ -137,7 +157,8 @@ const MOCK_EXPERIMENTOS: ExperimentoDetalhe[] = [
     id: 'm1',
     nome: 'PIX Turbo — confirmação em 1 etapa para contatos frequentes',
     hipotese: 'Eliminar a etapa de revisão para contatos com histórico de transações reduz o abandono sem impactar a percepção de segurança.',
-    status: 'Em andamento',
+    status: 'Concluído',
+    resultado: 'Vencedor',
     comunidade: 'Ferramentas JIP',
     rt: 'Experimentação com testes A/B',
     squad: 'Plataforma de experimentação',
@@ -179,7 +200,7 @@ const MOCK_EXPERIMENTOS: ExperimentoDetalhe[] = [
         { label: 'Variante (B)', color: '#3b82f6', data: [5.1, 5.6, 5.9, 6.1, 6.0, 6.2, 6.3, 6.2] },
       ],
       statResults: [
-        { varianteLabel: 'B', varianteNome: 'Variante (B)', color: '#3b82f6', conversionRate: 6.2, liftAbsoluto: 1.1, liftRelativo: 21.6, ciLower: -0.1, ciUpper: 2.3, pValor: 0.062, status: 'inconclusivo' },
+        { varianteLabel: 'B', varianteNome: 'Variante (B)', color: '#3b82f6', conversionRate: 6.3, liftAbsoluto: 1.2, liftRelativo: 23.5, ciLower: 0.2, ciUpper: 2.2, pValor: 0.031, status: 'vencedor' },
       ],
       metricasStatus: [
         { nome: 'conversion_rate', tipo: 'sucesso',    status: 'ok',      variacao: '+21.6%', descricao: 'Melhoria observada na variante B' },
@@ -188,6 +209,7 @@ const MOCK_EXPERIMENTOS: ExperimentoDetalhe[] = [
         { nome: 'error_rate',      tipo: 'secundaria', status: 'ok',      variacao: '+0.1%',  descricao: 'Sem degradação detectada' },
       ],
       eventos: [
+        { data: '12/05/2026', tipo: 'success',   titulo: 'Experimento encerrado — Variante B vencedora', descricao: 'Look 3 completado com Z-score 2,51 — acima da fronteira de sucesso (2,34). Experimento encerrado antecipadamente com 75% da amostra coletada.' },
         { data: '08/05/2026', tipo: 'milestone', titulo: 'Look 2 concluído',              descricao: 'Z-score: 1.87 — abaixo da fronteira (2.86). Decisão: continuar.' },
         { data: '07/05/2026', tipo: 'info',      titulo: '60% da amostra coletada',       descricao: '4.610 de 7.684 usuários necessários já foram expostos.' },
         { data: '05/05/2026', tipo: 'info',      titulo: 'Efeito novidade dissipado',     descricao: 'Experimento com mais de 3 dias de dados — resultados mais confiáveis.' },
@@ -212,10 +234,26 @@ const MOCK_EXPERIMENTOS: ExperimentoDetalhe[] = [
       interimLooks: [
         { lookNumber: 1, targetSamplePct: 25, scheduledDate: '04/05/2026', completedDate: '04/05/2026', zScore: 1.52, upperBound: 4.05, lowerBound: -0.48, decision: 'continue' },
         { lookNumber: 2, targetSamplePct: 50, scheduledDate: '08/05/2026', completedDate: '08/05/2026', zScore: 1.87, upperBound: 2.86, lowerBound: -0.48, decision: 'continue' },
-        { lookNumber: 3, targetSamplePct: 75, scheduledDate: '12/05/2026', upperBound: 2.34, lowerBound: -0.77, decision: 'pending' },
+        { lookNumber: 3, targetSamplePct: 75, scheduledDate: '12/05/2026', completedDate: '12/05/2026', zScore: 2.51, upperBound: 2.34, lowerBound: -0.77, decision: 'stop-success' },
         { lookNumber: 4, targetSamplePct: 100, scheduledDate: '15/05/2026', upperBound: 2.03, lowerBound: -1.02, decision: 'pending' },
       ],
-      currentDecision: 'continue',
+      currentDecision: 'stop-success',
+    },
+    resultadoData: {
+      dataEncerramento: '12/05/2026',
+      duracaoReal: 11,
+      usuariosTotais: 5763,
+      veredito: 'vencedor',
+      varianteVencedora: 'B',
+      liftFinal: 1.2,
+      liftRelativoFinal: 23.5,
+      pValorFinal: 0.031,
+      ciLowerFinal: 0.2,
+      ciUpperFinal: 2.2,
+      confidencia: 95,
+      resumoExecutivo: 'Remover a etapa de confirmação no envio de PIX para contatos frequentes aumentou em 23,5% a taxa de transações concluídas com sucesso. O resultado foi consistente ao longo de todo o experimento e atingido antes do prazo previsto, indicando que o efeito é real e sustentável. A satisfação dos clientes não foi impactada negativamente. Recomendamos expandir essa experiência para 100% da base de usuários.',
+      recomendacao: 'rollout',
+      lookFinalNumber: 3,
     },
   },
   {
@@ -312,7 +350,7 @@ const MOCK_EXPERIMENTOS: ExperimentoDetalhe[] = [
 @Component({
   selector: 'app-detalhe-experimento',
   standalone: true,
-  imports: [TabsModule, TagModule, ButtonModule, TooltipModule, DecimalPipe, ChartModule],
+  imports: [TabsModule, TagModule, ButtonModule, TooltipModule, DecimalPipe, ChartModule, Menu],
   templateUrl: './detalhe-experimento.component.html',
   styleUrl: './detalhe-experimento.component.scss',
 })
@@ -374,6 +412,19 @@ export class DetalheExperimentoComponent {
 
   readonly seqTest = computed(() => this.experimento()?.sequentialTest ?? null);
   readonly seqDecision = computed(() => this.seqTest()?.currentDecision ?? 'continue');
+
+  readonly decisaoMenuItems: MenuItem[] = [
+    { label: 'Expandir',        icon: 'pi pi-arrow-up-right', styleClass: 'decisao-item--green' },
+    { label: 'Manter atual',    icon: 'pi pi-minus-circle',   styleClass: 'decisao-item--amber' },
+    { label: 'Explorar opções', icon: 'pi pi-sparkles',       styleClass: 'decisao-item--blue'  },
+  ];
+
+  readonly resultadoData = computed(() => this.experimento()?.resultadoData ?? null);
+  readonly vencedoraVariante = computed(() => {
+    const rd = this.resultadoData();
+    if (!rd?.varianteVencedora) return null;
+    return this.experimento()?.variantes.find(v => v.label === rd.varianteVencedora) ?? null;
+  });
 
   readonly seqChartData = computed(() => {
     const seq = this.seqTest();
