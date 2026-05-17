@@ -43,6 +43,13 @@ interface VarianteExposicao {
   trafficPct: number;
 }
 
+interface EventoFeed {
+  data: string;
+  tipo: 'info' | 'success' | 'warning' | 'milestone';
+  titulo: string;
+  descricao?: string;
+}
+
 interface StatResult {
   varianteLabel: string;
   varianteNome: string;
@@ -75,6 +82,7 @@ interface AcompanhamentoData {
   conversionRates: { label: string; color: string; data: number[] }[];
   statResults: StatResult[];
   metricasStatus: MetricaStatus[];
+  eventos: EventoFeed[];
 }
 
 interface ExperimentoDetalhe {
@@ -164,6 +172,14 @@ const MOCK_EXPERIMENTOS: ExperimentoDetalhe[] = [
         { nome: 'session_duration',tipo: 'secundaria', status: 'neutral', variacao: '+2.1%',  descricao: 'Leve melhoria, sem significância' },
         { nome: 'error_rate',      tipo: 'secundaria', status: 'ok',      variacao: '+0.1%',  descricao: 'Sem degradação detectada' },
       ],
+      eventos: [
+        { data: '08/05/2026', tipo: 'milestone', titulo: 'Look 2 concluído',              descricao: 'Z-score: 1.87 — abaixo da fronteira (2.86). Decisão: continuar.' },
+        { data: '07/05/2026', tipo: 'info',      titulo: '60% da amostra coletada',       descricao: '4.610 de 7.684 usuários necessários já foram expostos.' },
+        { data: '05/05/2026', tipo: 'info',      titulo: 'Efeito novidade dissipado',     descricao: 'Experimento com mais de 3 dias de dados — resultados mais confiáveis.' },
+        { data: '04/05/2026', tipo: 'milestone', titulo: 'Look 1 concluído',              descricao: 'Z-score: 1.52 — abaixo da fronteira (4.05). Decisão: continuar.' },
+        { data: '02/05/2026', tipo: 'success',   titulo: 'Primeiros usuários expostos',  descricao: 'Experimento ativo e distribuindo tráfego normalmente.' },
+        { data: '01/05/2026', tipo: 'milestone', titulo: 'Experimento iniciado',          descricao: 'PIX Turbo — confirmação em 1 etapa para contatos frequentes.' },
+      ],
     },
     sequentialTest: {
       nLooks: 4,
@@ -233,6 +249,15 @@ const MOCK_EXPERIMENTOS: ExperimentoDetalhe[] = [
         { nome: 'session_duration', tipo: 'sucesso',    status: 'ok',      variacao: '+11.1%', descricao: 'Melhoria observada na variante B' },
         { nome: 'error_rate',       tipo: 'guardrail',  status: 'warning', variacao: '+8.2%',  descricao: 'Aumento acima do esperado — monitorar' },
         { nome: 'conversion_rate',  tipo: 'secundaria', status: 'neutral', variacao: '+5.3%',  descricao: 'Tendência positiva, sem significância' },
+      ],
+      eventos: [
+        { data: '03/05/2026', tipo: 'warning',   titulo: 'error_rate acima do esperado',    descricao: 'Variante B registrou +8.2% na taxa de erro. Guardrail em monitoramento.' },
+        { data: '29/04/2026', tipo: 'milestone', titulo: 'Look 2 concluído',                descricao: 'Z-score: 1.72 — abaixo da fronteira (2.86). Decisão: continuar.' },
+        { data: '26/04/2026', tipo: 'warning',   titulo: 'Double-bucketing detectado',      descricao: '28 usuários atribuídos a mais de uma variante. Taxa: 0.31% — monitorar.' },
+        { data: '22/04/2026', tipo: 'milestone', titulo: 'Look 1 concluído',                descricao: 'Z-score: 1.44 — abaixo da fronteira (4.05). Decisão: continuar.' },
+        { data: '18/04/2026', tipo: 'info',      titulo: 'Efeito novidade dissipado',       descricao: 'Experimento com mais de 3 dias de dados — resultados mais confiáveis.' },
+        { data: '16/04/2026', tipo: 'success',   titulo: 'Primeiros usuários expostos',     descricao: 'Experimento ativo e distribuindo tráfego normalmente.' },
+        { data: '15/04/2026', tipo: 'milestone', titulo: 'Experimento iniciado',            descricao: 'Home personalizada por padrão de uso — v2.' },
       ],
     },
     sequentialTest: {
@@ -307,6 +332,9 @@ export class DetalheExperimentoComponent {
 
   readonly statResults    = computed(() => this.acompanhamento()?.statResults    ?? []);
   readonly metricasStatus = computed(() => this.acompanhamento()?.metricasStatus ?? []);
+  readonly eventos        = computed(() => this.acompanhamento()?.eventos        ?? []);
+
+  feedExpanded = false;
 
   readonly seqTest = computed(() => this.experimento()?.sequentialTest ?? null);
   readonly seqDecision = computed(() => this.seqTest()?.currentDecision ?? 'continue');

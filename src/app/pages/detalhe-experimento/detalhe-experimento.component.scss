@@ -710,6 +710,122 @@
   &--neutral { background: #f3f4f6; color: #6b7280; }
 }
 
+// ── Feed de eventos ───────────────────────────────────────────
+
+.feed-card { padding: 0 !important; }
+
+.feed-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  padding: 1.25rem 1.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+
+  &:hover { background: #fafafa; }
+
+  .detail-card-title { margin: 0; }
+}
+
+.feed-toggle-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.feed-count {
+  font-size: 0.78rem;
+  color: #9ca3af;
+}
+
+.feed-chevron {
+  font-size: 0.78rem;
+  color: #9ca3af;
+  transition: transform 0.2s ease;
+
+  &--open { transform: rotate(180deg); }
+}
+
+.feed-list {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem 1.5rem 1.25rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+.feed-item {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  position: relative;
+  padding-bottom: 1.25rem;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 11px;
+    top: 26px;
+    bottom: 0;
+    width: 2px;
+    background: #e5e7eb;
+  }
+
+  &--last::before { display: none; }
+}
+
+.feed-dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  z-index: 1;
+
+  &--info      { background: #eff6ff; color: #2563eb; }
+  &--success   { background: #f0fdf4; color: #16a34a; }
+  &--warning   { background: #fef3c7; color: #d97706; }
+  &--milestone { background: #f5f3ff; color: #7c3aed; }
+}
+
+.feed-content {
+  flex: 1;
+  padding-top: 0.1rem;
+}
+
+.feed-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.625rem;
+  flex-wrap: wrap;
+}
+
+.feed-titulo {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.feed-data {
+  font-size: 0.72rem;
+  color: #9ca3af;
+  white-space: nowrap;
+}
+
+.feed-descricao {
+  font-size: 0.78rem;
+  color: #6b7280;
+  margin-top: 0.2rem;
+  line-height: 1.5;
+}
+
 // ── Sequential Testing ────────────────────────────────────────
 
 .seq-card-header {

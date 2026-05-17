@@ -575,6 +575,43 @@
                 }
               </div>
 
+              <!-- Feed de eventos -->
+              @if (eventos().length > 0) {
+                <div class="detail-card feed-card">
+                  <button class="feed-card-header" (click)="feedExpanded = !feedExpanded">
+                    <h2 class="detail-card-title"><i class="pi pi-history"></i> Feed de eventos</h2>
+                    <div class="feed-toggle-right">
+                      <span class="feed-count">{{ eventos().length }} eventos</span>
+                      <i class="pi pi-chevron-down feed-chevron" [class.feed-chevron--open]="feedExpanded"></i>
+                    </div>
+                  </button>
+                  @if (feedExpanded) {
+                  <div class="feed-list">
+                    @for (ev of eventos(); track $index; let last = $last) {
+                      <div class="feed-item" [class.feed-item--last]="last">
+                        <div class="feed-dot feed-dot--{{ ev.tipo }}">
+                          <i class="pi"
+                             [class.pi-info-circle]="ev.tipo === 'info'"
+                             [class.pi-check-circle]="ev.tipo === 'success'"
+                             [class.pi-exclamation-triangle]="ev.tipo === 'warning'"
+                             [class.pi-flag]="ev.tipo === 'milestone'"></i>
+                        </div>
+                        <div class="feed-content">
+                          <div class="feed-header">
+                            <span class="feed-titulo">{{ ev.titulo }}</span>
+                            <span class="feed-data">{{ ev.data }}</span>
+                          </div>
+                          @if (ev.descricao) {
+                            <p class="feed-descricao">{{ ev.descricao }}</p>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                  }
+                </div>
+              }
+
             </div>
           } @else {
             <div class="tab-empty">
