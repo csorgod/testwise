@@ -20,7 +20,7 @@
     </div>
 
     <!-- ── Tabs ──────────────────────────────────────────────── -->
-    <p-tabs [(value)]="activeTab">
+    <p-tabs [(value)]="activeTab" (valueChange)="onTabChange($event)">
 
       <p-tablist>
         <p-tab value="detalhes">Detalhes</p-tab>
@@ -1014,6 +1014,81 @@
 
       </p-tabpanels>
     </p-tabs>
+
+    <!-- Modal de resultado -->
+    @if (resultadoData(); as rd) {
+      <p-dialog [(visible)]="resultadoModalVisible"
+                [modal]="true"
+                [closable]="true"
+                [draggable]="false"
+                [resizable]="false"
+                styleClass="res-modal"
+                [style]="{ width: '520px' }">
+
+        <ng-template pTemplate="header">
+          <div class="res-modal-header">
+            <div class="res-modal-trophy">🏆</div>
+            <div>
+              <div class="res-modal-eyebrow">Experimento concluído</div>
+              <h2 class="res-modal-title">Variante {{ rd.varianteVencedora }} vencedora!</h2>
+            </div>
+          </div>
+        </ng-template>
+
+        <div class="res-modal-body">
+          <p class="res-modal-desc">
+            A mudança testada gerou um impacto real e estatisticamente comprovado. Veja os principais números:
+          </p>
+
+          <div class="res-modal-visual">
+            <div class="res-visual-image">
+              <i class="pi pi-image"></i>
+              <span>Sem imagem cadastrada</span>
+            </div>
+            @if (winnerStat(); as winner) {
+              <div class="res-modal-visual-label">
+                <span class="variante-badge" [style.background]="winner.color">{{ winner.varianteLabel }}</span>
+                <span class="res-modal-visual-nome">{{ winner.varianteNome }}</span>
+                <span class="stat-status-cell stat-status-cell--vencedor">Vencedor</span>
+              </div>
+            }
+          </div>
+
+          <div class="res-modal-kpis">
+            <div class="res-modal-kpi">
+              <span class="res-modal-kpi-value">+{{ rd.liftRelativoFinal }}%</span>
+              <span class="res-modal-kpi-label">Lift na conversão</span>
+            </div>
+            <div class="res-modal-kpi-divider"></div>
+            <div class="res-modal-kpi">
+              <span class="res-modal-kpi-value">{{ rd.confidencia }}%</span>
+              <span class="res-modal-kpi-label">Confiança estatística</span>
+            </div>
+            <div class="res-modal-kpi-divider"></div>
+            <div class="res-modal-kpi">
+              <span class="res-modal-kpi-value">{{ rd.usuariosTotais | number }}</span>
+              <span class="res-modal-kpi-label">Usuários no teste</span>
+            </div>
+          </div>
+
+          @if (rd.lookFinalNumber) {
+            <div class="res-modal-pill">
+              <i class="pi pi-bolt"></i>
+              Encerrado {{ exp.diasEstimados! - rd.duracaoReal }} dias antes do prazo pelo teste sequencial
+            </div>
+          }
+        </div>
+
+        <ng-template pTemplate="footer">
+          <div class="res-modal-footer">
+            <p-button label="Ver resultado completo" icon="pi pi-chart-bar"
+                      [outlined]="true" severity="success" styleClass="res-modal-cta"
+                      (click)="resultadoModalVisible = false" />
+          </div>
+        </ng-template>
+
+      </p-dialog>
+    }
 
   } @else {
     <div class="not-found">

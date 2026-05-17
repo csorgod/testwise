@@ -7,7 +7,9 @@ import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
 import { ChartModule } from 'primeng/chart';
 import { Menu } from 'primeng/menu';
+import { DialogModule } from 'primeng/dialog';
 import { MenuItem } from 'primeng/api';
+import confetti from 'canvas-confetti';
 
 interface Param { key: string; value: string; }
 
@@ -350,7 +352,7 @@ const MOCK_EXPERIMENTOS: ExperimentoDetalhe[] = [
 @Component({
   selector: 'app-detalhe-experimento',
   standalone: true,
-  imports: [TabsModule, TagModule, ButtonModule, TooltipModule, DecimalPipe, ChartModule, Menu],
+  imports: [TabsModule, TagModule, ButtonModule, TooltipModule, DecimalPipe, ChartModule, Menu, DialogModule],
   templateUrl: './detalhe-experimento.component.html',
   styleUrl: './detalhe-experimento.component.scss',
 })
@@ -359,6 +361,8 @@ export class DetalheExperimentoComponent {
   private readonly router = inject(Router);
 
   activeTab = 'detalhes';
+  resultadoModalVisible = false;
+  private resultadoModalShown = false;
 
   readonly experimento = computed<ExperimentoDetalhe | null>(() => {
     const id = this.route.snapshot.paramMap.get('id');
@@ -574,4 +578,24 @@ export class DetalheExperimentoComponent {
   }
 
   goBack(): void { this.router.navigate(['/experimentos']); }
+
+  onTabChange(tab: string | number | undefined): void {
+    if (tab === 'resultado' && this.resultadoData() && !this.resultadoModalShown) {
+      this.resultadoModalShown = true;
+      this.resultadoModalVisible = true;
+      setTimeout(() => this.launchConfetti(), 200);
+    }
+  }
+
+  private launchConfetti(): void {
+    const end = Date.now() + 2500;
+    const colors = ['#FF6200', '#005183', '#16a34a', '#FFF20A'];
+
+    const frame = () => {
+      confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0 }, colors });
+      confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 }, colors });
+      if (Date.now() < end) requestAnimationFrame(frame);
+    };
+    frame();
+  }
 }
