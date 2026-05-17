@@ -39,6 +39,7 @@ export class ExperimentosComponent {
   private readonly router  = inject(Router);
 
   navigateToDetail(id: string): void { this.router.navigate(['/experimentos', id]); }
+  navigateToCriar(): void { this.router.navigate(['/criar-experimento']); }
 
   loading         = signal(true);
   searchQuery     = signal('');

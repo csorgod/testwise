@@ -5,8 +5,27 @@ import { TabsModule } from 'primeng/tabs';
 import { TagModule } from 'primeng/tag';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
+import { ChartModule } from 'primeng/chart';
 
 interface Param { key: string; value: string; }
+
+interface InterimLook {
+  lookNumber: number;
+  targetSamplePct: number;
+  scheduledDate: string;
+  completedDate?: string;
+  zScore?: number;
+  upperBound: number;
+  lowerBound: number;
+  decision: 'pending' | 'continue' | 'stop-success' | 'stop-futility';
+}
+
+interface SequentialTestData {
+  nLooks: number;
+  alpha: number;
+  interimLooks: InterimLook[];
+  currentDecision: 'continue' | 'stop-success' | 'stop-futility';
+}
 
 interface VarianteDetalhe {
   label: string;
@@ -17,34 +36,68 @@ interface VarianteDetalhe {
   color: string;
 }
 
+interface VarianteExposicao {
+  label: string;
+  count: number;
+  color: string;
+  trafficPct: number;
+}
+
+interface StatResult {
+  varianteLabel: string;
+  varianteNome: string;
+  color: string;
+  conversionRate: number;
+  liftAbsoluto: number;
+  liftRelativo: number;
+  ciLower: number;
+  ciUpper: number;
+  pValor: number;
+  status: 'vencedor' | 'perdedor' | 'inconclusivo';
+}
+
+interface MetricaStatus {
+  nome: string;
+  tipo: 'sucesso' | 'guardrail' | 'secundaria';
+  status: 'ok' | 'warning' | 'neutral';
+  variacao: string;
+  descricao: string;
+}
+
+interface AcompanhamentoData {
+  diasDecorridos: number;
+  dataEstimadaFim: string;
+  usuariosExpostos: number;
+  taxaControle: number;
+  porVariante: VarianteExposicao[];
+  doubleBucketing: number;
+  timeLabels: string[];
+  conversionRates: { label: string; color: string; data: number[] }[];
+  statResults: StatResult[];
+  metricasStatus: MetricaStatus[];
+}
+
 interface ExperimentoDetalhe {
   id: string;
   nome: string;
   hipotese: string;
   status: 'Em andamento' | 'Concluído' | 'Pausado';
   resultado?: 'Vencedor' | 'Perdedor' | 'Inconclusivo';
-  // Estrutura organizacional
   comunidade: string;
   rt: string;
   squad: string;
-  // Produto
   sigla: string;
   produto: string;
   subproduto: string;
-  // Item de trabalho
   tipoItem: string;
   itemTrabalho: string;
-  // Configuração
   dataInicio: string;
   audiencia: number;
   trafficSplit: number[];
-  // Variantes
   variantes: VarianteDetalhe[];
-  // Métricas
   metricasSucesso: string[];
   metricasGuardrail: string[];
   metricasSecundarias: string[];
-  // Parâmetros
   baselineRate: number;
   mde: number;
   confianca: number;
@@ -52,6 +105,8 @@ interface ExperimentoDetalhe {
   samplePerVariant: number;
   totalUsers: number;
   diasEstimados: number | null;
+  acompanhamento?: AcompanhamentoData;
+  sequentialTest?: SequentialTestData;
 }
 
 const MOCK_EXPERIMENTOS: ExperimentoDetalhe[] = [
@@ -85,6 +140,42 @@ const MOCK_EXPERIMENTOS: ExperimentoDetalhe[] = [
     samplePerVariant: 3842,
     totalUsers: 7684,
     diasEstimados: 14,
+    acompanhamento: {
+      diasDecorridos: 8,
+      dataEstimadaFim: '15/05/2026',
+      usuariosExpostos: 4812,
+      porVariante: [
+        { label: 'A', count: 2394, color: '#fb923c', trafficPct: 50 },
+        { label: 'B', count: 2418, color: '#f48937', trafficPct: 50 },
+      ],
+      taxaControle: 5.1,
+      doubleBucketing: 0,
+      timeLabels: ['01/05', '02/05', '03/05', '04/05', '05/05', '06/05', '07/05', '08/05'],
+      conversionRates: [
+        { label: 'Controle (A)', color: '#fb923c', data: [4.2, 4.8, 4.9, 5.1, 5.0, 5.2, 5.1, 5.1] },
+        { label: 'Variante (B)', color: '#f48937', data: [5.1, 5.6, 5.9, 6.1, 6.0, 6.2, 6.3, 6.2] },
+      ],
+      statResults: [
+        { varianteLabel: 'B', varianteNome: 'Variante (B)', color: '#f48937', conversionRate: 6.2, liftAbsoluto: 1.1, liftRelativo: 21.6, ciLower: -0.1, ciUpper: 2.3, pValor: 0.062, status: 'inconclusivo' },
+      ],
+      metricasStatus: [
+        { nome: 'conversion_rate', tipo: 'sucesso',    status: 'ok',      variacao: '+21.6%', descricao: 'Melhoria observada na variante B' },
+        { nome: 'nps_score',       tipo: 'guardrail',  status: 'ok',      variacao: '-0.2%',  descricao: 'Dentro do intervalo esperado' },
+        { nome: 'session_duration',tipo: 'secundaria', status: 'neutral', variacao: '+2.1%',  descricao: 'Leve melhoria, sem significância' },
+        { nome: 'error_rate',      tipo: 'secundaria', status: 'ok',      variacao: '+0.1%',  descricao: 'Sem degradação detectada' },
+      ],
+    },
+    sequentialTest: {
+      nLooks: 4,
+      alpha: 0.05,
+      interimLooks: [
+        { lookNumber: 1, targetSamplePct: 25, scheduledDate: '04/05/2026', completedDate: '04/05/2026', zScore: 1.52, upperBound: 4.05, lowerBound: -0.48, decision: 'continue' },
+        { lookNumber: 2, targetSamplePct: 50, scheduledDate: '08/05/2026', completedDate: '08/05/2026', zScore: 1.87, upperBound: 2.86, lowerBound: -0.48, decision: 'continue' },
+        { lookNumber: 3, targetSamplePct: 75, scheduledDate: '12/05/2026', upperBound: 2.34, lowerBound: -0.77, decision: 'pending' },
+        { lookNumber: 4, targetSamplePct: 100, scheduledDate: '15/05/2026', upperBound: 2.03, lowerBound: -1.02, decision: 'pending' },
+      ],
+      currentDecision: 'continue',
+    },
   },
   {
     id: 'm2',
@@ -117,13 +208,51 @@ const MOCK_EXPERIMENTOS: ExperimentoDetalhe[] = [
     samplePerVariant: 5210,
     totalUsers: 15630,
     diasEstimados: 21,
+    acompanhamento: {
+      diasDecorridos: 12,
+      dataEstimadaFim: '06/05/2026',
+      usuariosExpostos: 9126,
+      porVariante: [
+        { label: 'A', count: 3108, color: '#fb923c', trafficPct: 34 },
+        { label: 'B', count: 3012, color: '#f48937', trafficPct: 33 },
+        { label: 'C', count: 3006, color: '#ee8031', trafficPct: 33 },
+      ],
+      taxaControle: 8.1,
+      doubleBucketing: 28,
+      timeLabels: ['15/04', '16/04', '17/04', '18/04', '19/04', '20/04', '21/04', '22/04', '23/04', '24/04', '25/04', '26/04'],
+      conversionRates: [
+        { label: 'Controle (A)', color: '#fb923c', data: [7.2, 7.8, 8.1, 8.0, 8.2, 8.1, 8.3, 8.1, 8.0, 8.2, 8.1, 8.1] },
+        { label: 'Variante (B)', color: '#f48937', data: [8.3, 8.7, 9.0, 8.9, 9.1, 9.0, 9.2, 9.1, 9.0, 9.1, 9.0, 9.0] },
+        { label: 'Variante (C)', color: '#ee8031', data: [7.8, 8.2, 8.4, 8.5, 8.4, 8.6, 8.5, 8.4, 8.5, 8.4, 8.5, 8.5] },
+      ],
+      statResults: [
+        { varianteLabel: 'B', varianteNome: 'Variante (B)', color: '#f48937', conversionRate: 9.0, liftAbsoluto: 0.9, liftRelativo: 11.1, ciLower: -0.1, ciUpper: 1.9, pValor: 0.084, status: 'inconclusivo' },
+        { varianteLabel: 'C', varianteNome: 'Variante (C)', color: '#ee8031', conversionRate: 8.5, liftAbsoluto: 0.4, liftRelativo:  4.9, ciLower: -0.5, ciUpper: 1.3, pValor: 0.379, status: 'inconclusivo' },
+      ],
+      metricasStatus: [
+        { nome: 'session_duration', tipo: 'sucesso',    status: 'ok',      variacao: '+11.1%', descricao: 'Melhoria observada na variante B' },
+        { nome: 'error_rate',       tipo: 'guardrail',  status: 'warning', variacao: '+8.2%',  descricao: 'Aumento acima do esperado — monitorar' },
+        { nome: 'conversion_rate',  tipo: 'secundaria', status: 'neutral', variacao: '+5.3%',  descricao: 'Tendência positiva, sem significância' },
+      ],
+    },
+    sequentialTest: {
+      nLooks: 4,
+      alpha: 0.05,
+      interimLooks: [
+        { lookNumber: 1, targetSamplePct: 25, scheduledDate: '22/04/2026', completedDate: '22/04/2026', zScore: 1.44, upperBound: 4.05, lowerBound: -0.48, decision: 'continue' },
+        { lookNumber: 2, targetSamplePct: 50, scheduledDate: '29/04/2026', completedDate: '29/04/2026', zScore: 1.72, upperBound: 2.86, lowerBound: -0.48, decision: 'continue' },
+        { lookNumber: 3, targetSamplePct: 75, scheduledDate: '06/05/2026', upperBound: 2.34, lowerBound: -0.77, decision: 'pending' },
+        { lookNumber: 4, targetSamplePct: 100, scheduledDate: '06/05/2026', upperBound: 2.03, lowerBound: -1.02, decision: 'pending' },
+      ],
+      currentDecision: 'continue',
+    },
   },
 ];
 
 @Component({
   selector: 'app-detalhe-experimento',
   standalone: true,
-  imports: [TabsModule, TagModule, ButtonModule, TooltipModule, DecimalPipe],
+  imports: [TabsModule, TagModule, ButtonModule, TooltipModule, DecimalPipe, ChartModule],
   templateUrl: './detalhe-experimento.component.html',
   styleUrl: './detalhe-experimento.component.scss',
 })
@@ -137,6 +266,184 @@ export class DetalheExperimentoComponent {
     const id = this.route.snapshot.paramMap.get('id');
     return MOCK_EXPERIMENTOS.find(e => e.id === id) ?? null;
   });
+
+  readonly acompanhamento = computed(() => this.experimento()?.acompanhamento ?? null);
+
+  readonly progressPct = computed(() => {
+    const exp = this.experimento();
+    const ac  = this.acompanhamento();
+    if (!exp || !ac || !exp.diasEstimados) return 0;
+    return Math.min(Math.round(ac.diasDecorridos / exp.diasEstimados * 100), 100);
+  });
+
+  readonly samplePct = computed(() => {
+    const exp = this.experimento();
+    const ac  = this.acompanhamento();
+    if (!exp || !ac) return 0;
+    return Math.min(Math.round(ac.usuariosExpostos / exp.totalUsers * 100), 100);
+  });
+
+  readonly sampleReached = computed(() => this.samplePct() >= 100);
+
+  readonly noveltyWarning = computed(() => {
+    const ac = this.acompanhamento();
+    return ac ? ac.diasDecorridos < 3 : false;
+  });
+
+  readonly isReceivingUsers = computed(() => this.experimento()?.status === 'Em andamento');
+
+  readonly doubleBucketingStatus = computed<'ok' | 'warning'>(() => {
+    const ac = this.acompanhamento();
+    if (!ac || ac.usuariosExpostos === 0) return 'ok';
+    const rate = ac.doubleBucketing / ac.usuariosExpostos;
+    return rate > 0.001 ? 'warning' : 'ok';
+  });
+
+  readonly doubleBucketingRate = computed(() => {
+    const ac = this.acompanhamento();
+    if (!ac || ac.usuariosExpostos === 0) return '0';
+    return ((ac.doubleBucketing / ac.usuariosExpostos) * 100).toFixed(2);
+  });
+
+  readonly statResults    = computed(() => this.acompanhamento()?.statResults    ?? []);
+  readonly metricasStatus = computed(() => this.acompanhamento()?.metricasStatus ?? []);
+
+  readonly seqTest = computed(() => this.experimento()?.sequentialTest ?? null);
+  readonly seqDecision = computed(() => this.seqTest()?.currentDecision ?? 'continue');
+
+  readonly seqChartData = computed(() => {
+    const seq = this.seqTest();
+    if (!seq) return null;
+    return {
+      labels: seq.interimLooks.map(l => `Look ${l.lookNumber} (${l.targetSamplePct}%)`),
+      datasets: [
+        {
+          label: 'Z-score observado',
+          data: seq.interimLooks.map(l => l.zScore ?? null),
+          borderColor: '#fb923c',
+          backgroundColor: '#fb923c33',
+          fill: false,
+          tension: 0.3,
+          pointRadius: 5,
+          pointHoverRadius: 7,
+          borderWidth: 2,
+          spanGaps: false,
+        },
+        {
+          label: 'Fronteira superior (sucesso)',
+          data: seq.interimLooks.map(l => l.upperBound),
+          borderColor: '#16a34a',
+          borderDash: [6, 4],
+          backgroundColor: 'rgba(22, 163, 74, 0.1)',
+          pointRadius: 0,
+          borderWidth: 1.5,
+          fill: 'end',
+          tension: 0,
+        },
+        {
+          label: 'Fronteira inferior (futilidade)',
+          data: seq.interimLooks.map(l => l.lowerBound),
+          borderColor: '#d97706',
+          borderDash: [6, 4],
+          backgroundColor: 'rgba(217, 119, 6, 0.1)',
+          pointRadius: 0,
+          borderWidth: 1.5,
+          fill: 'start',
+          tension: 0,
+        },
+      ],
+    };
+  });
+
+  readonly seqChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom' as const,
+        labels: { boxWidth: 12, padding: 16, font: { size: 11 } },
+      },
+      tooltip: {
+        mode: 'index' as const,
+        intersect: false,
+        callbacks: {
+          label: (ctx: any) => {
+            const v = ctx.parsed.y;
+            return v !== null && v !== undefined ? ` ${ctx.dataset.label}: ${(v as number).toFixed(2)}` : '';
+          },
+        },
+      },
+    },
+    scales: {
+      x: { grid: { color: '#f3f4f6' }, ticks: { font: { size: 11 } } },
+      y: {
+        grid: { color: '#f3f4f6' },
+        ticks: { font: { size: 11 } },
+        title: { display: true, text: 'Z-score', font: { size: 11 }, color: '#6b7280' },
+      },
+    },
+  };
+
+  readonly srmStatus = computed<'ok' | 'warning'>(() => {
+    const ac = this.acompanhamento();
+    if (!ac) return 'ok';
+    const hasSRM = ac.porVariante.some(v => {
+      const expected = (v.trafficPct / 100) * ac.usuariosExpostos;
+      return Math.abs(v.count - expected) / expected > 0.05;
+    });
+    return hasSRM ? 'warning' : 'ok';
+  });
+
+  readonly chartData = computed(() => {
+    const ac = this.acompanhamento();
+    if (!ac) return null;
+    return {
+      labels: ac.timeLabels,
+      datasets: ac.conversionRates.map(v => ({
+        label: v.label,
+        data: v.data,
+        borderColor: v.color,
+        backgroundColor: v.color + '22',
+        fill: false,
+        tension: 0.4,
+        pointRadius: 3,
+        pointHoverRadius: 5,
+        borderWidth: 2,
+      })),
+    };
+  });
+
+  readonly chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom' as const,
+        labels: { boxWidth: 12, padding: 20, font: { size: 12 } },
+      },
+      tooltip: {
+        mode: 'index' as const,
+        intersect: false,
+        callbacks: {
+          label: (ctx: any) => ` ${ctx.dataset.label}: ${(ctx.parsed.y as number).toFixed(1)}%`,
+        },
+      },
+    },
+    scales: {
+      x: {
+        grid: { color: '#f3f4f6' },
+        ticks: { font: { size: 11 } },
+      },
+      y: {
+        grid: { color: '#f3f4f6' },
+        ticks: {
+          font: { size: 11 },
+          callback: (value: any) => value + '%',
+        },
+        beginAtZero: false,
+      },
+    },
+  };
 
   statusSeverity(s: string): 'info' | 'secondary' | 'warn' {
     if (s === 'Em andamento') return 'info';
