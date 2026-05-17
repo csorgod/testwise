@@ -1,4 +1,4 @@
-import { Component, inject, computed } from '@angular/core';
+import { Component, inject, computed, signal, ViewChild, ElementRef } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TabsModule } from 'primeng/tabs';
@@ -10,6 +10,8 @@ import { Menu } from 'primeng/menu';
 import { DialogModule } from 'primeng/dialog';
 import { MenuItem } from 'primeng/api';
 import confetti from 'canvas-confetti';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 interface Param { key: string; value: string; }
 
@@ -106,6 +108,11 @@ interface ResultadoData {
   lookFinalNumber?: number;
 }
 
+interface SanityCheck {
+  status: 'ok' | 'warning' | 'pending';
+  detalhes: string;
+}
+
 interface AcompanhamentoData {
   diasDecorridos: number;
   dataEstimadaFim: string;
@@ -119,6 +126,7 @@ interface AcompanhamentoData {
   metricasStatus: MetricaStatus[];
   eventos: EventoFeed[];
   projecao: ProjecaoEncerramento;
+  sanityCheck: SanityCheck;
 }
 
 interface ExperimentoDetalhe {
@@ -229,6 +237,7 @@ const MOCK_EXPERIMENTOS: ExperimentoDetalhe[] = [
           { lookNumber: 4, probabilidade: 61, dataEstimada: '13/05/2026' },
         ],
       },
+      sanityCheck: { status: 'ok', detalhes: 'Primeiros usuários expostos em 3 minutos, sem erros detectados.' },
     },
     sequentialTest: {
       nLooks: 4,
@@ -334,6 +343,7 @@ const MOCK_EXPERIMENTOS: ExperimentoDetalhe[] = [
           { lookNumber: 4, probabilidade: 45, dataEstimada: '06/05/2026' },
         ],
       },
+      sanityCheck: { status: 'ok', detalhes: 'Primeiros usuários expostos em 5 minutos, sem erros detectados.' },
     },
     sequentialTest: {
       nLooks: 4,
@@ -360,8 +370,11 @@ export class DetalheExperimentoComponent {
   private readonly route  = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
+  @ViewChild('resultContent') resultContent!: ElementRef<HTMLElement>;
+
   activeTab = 'detalhes';
   resultadoModalVisible = false;
+  exportingPdf = signal(false);
   private resultadoModalShown = false;
 
   readonly experimento = computed<ExperimentoDetalhe | null>(() => {
@@ -387,10 +400,8 @@ export class DetalheExperimentoComponent {
 
   readonly sampleReached = computed(() => this.samplePct() >= 100);
 
-  readonly noveltyWarning = computed(() => {
-    const ac = this.acompanhamento();
-    return ac ? ac.diasDecorridos < 3 : false;
-  });
+  readonly sanityCheckStatus = computed(() => this.acompanhamento()?.sanityCheck?.status ?? 'pending');
+  readonly sanityCheckDetails = computed(() => this.acompanhamento()?.sanityCheck?.detalhes ?? 'Aguardando dados dos primeiros minutos do experimento.');
 
   readonly isReceivingUsers = computed(() => this.experimento()?.status === 'Em andamento');
 
@@ -517,14 +528,27 @@ export class DetalheExperimentoComponent {
   readonly chartData = computed(() => {
     const ac = this.acompanhamento();
     if (!ac) return null;
+
+    // Encontra o índice do variant com maior valor no último ponto (excluindo controle)
+    const controlLast = ac.conversionRates[0].data.at(-1) ?? 0;
+    let leaderIndex = -1;
+    let leaderColor = '';
+    let bestDiff = 0;
+    ac.conversionRates.slice(1).forEach((v, i) => {
+      const diff = (v.data.at(-1) ?? 0) - controlLast;
+      if (diff > bestDiff) { bestDiff = diff; leaderIndex = i + 1; leaderColor = v.color; }
+    });
+
     return {
       labels: ac.timeLabels,
-      datasets: ac.conversionRates.map(v => ({
+      datasets: ac.conversionRates.map((v, i) => ({
         label: v.label,
         data: v.data,
         borderColor: v.color,
         backgroundColor: v.color + '22',
-        fill: false,
+        fill: i === leaderIndex && leaderIndex > 0
+          ? { target: 0, above: leaderColor + '33', below: 'transparent' }
+          : false,
         tension: 0.4,
         pointRadius: 3,
         pointHoverRadius: 5,
@@ -584,6 +608,32 @@ export class DetalheExperimentoComponent {
       this.resultadoModalShown = true;
       this.resultadoModalVisible = true;
       setTimeout(() => this.launchConfetti(), 200);
+    }
+  }
+
+  async exportPdf(): Promise<void> {
+    if (this.exportingPdf() || !this.resultContent) return;
+    this.exportingPdf.set(true);
+    try {
+      const el = this.resultContent.nativeElement;
+      const canvas = await html2canvas(el, { scale: 2, useCORS: true, logging: false });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const pageW = pdf.internal.pageSize.getWidth();
+      const pageH = pdf.internal.pageSize.getHeight();
+      const imgH = (canvas.height * pageW) / canvas.width;
+      let remaining = imgH;
+      let srcY = 0;
+      while (remaining > 0) {
+        pdf.addImage(imgData, 'PNG', 0, -srcY, pageW, imgH);
+        remaining -= pageH;
+        srcY += pageH;
+        if (remaining > 0) pdf.addPage();
+      }
+      const nome = this.experimento()?.nome ?? 'experimento';
+      pdf.save(`resultado-${nome}.pdf`);
+    } finally {
+      this.exportingPdf.set(false);
     }
   }
 

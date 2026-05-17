@@ -314,6 +314,25 @@
                 <div class="health-grid">
 
                   <div class="health-card"
+                       [class.health-card--ok]="sanityCheckStatus() === 'ok'"
+                       [class.health-card--warning]="sanityCheckStatus() === 'warning'"
+                       [class.health-card--info]="sanityCheckStatus() === 'pending'"
+                       [pTooltip]="sanityCheckDetails()"
+                       tooltipPosition="top">
+                    <i class="pi health-card-icon"
+                       [class.pi-check-circle]="sanityCheckStatus() === 'ok'"
+                       [class.pi-exclamation-triangle]="sanityCheckStatus() === 'warning'"
+                       [class.pi-clock]="sanityCheckStatus() === 'pending'"></i>
+                    <span class="health-card-label">Sanity Check</span>
+                    <span class="health-badge"
+                          [class.health-badge--ok]="sanityCheckStatus() === 'ok'"
+                          [class.health-badge--warning]="sanityCheckStatus() === 'warning'"
+                          [class.health-badge--info]="sanityCheckStatus() === 'pending'">
+                      {{ sanityCheckStatus() === 'ok' ? 'Aprovado' : sanityCheckStatus() === 'warning' ? 'Atenção' : 'Aguardando' }}
+                    </span>
+                  </div>
+
+                  <div class="health-card"
                        [class.health-card--ok]="srmStatus() === 'ok'"
                        [class.health-card--warning]="srmStatus() === 'warning'"
                        [pTooltip]="srmStatus() === 'ok' ? 'Proporção entre variantes dentro do esperado.' : 'Desbalanceamento detectado — verifique o sistema de atribuição.'"
@@ -326,22 +345,6 @@
                           [class.health-badge--ok]="srmStatus() === 'ok'"
                           [class.health-badge--warning]="srmStatus() === 'warning'">
                       {{ srmStatus() === 'ok' ? 'Saudável' : 'Atenção' }}
-                    </span>
-                  </div>
-
-                  <div class="health-card"
-                       [class.health-card--ok]="!noveltyWarning()"
-                       [class.health-card--warning]="noveltyWarning()"
-                       [pTooltip]="!noveltyWarning() ? 'Experimento maduro o suficiente para análise.' : 'Menos de 3 dias — resultados podem refletir curiosidade inicial.'"
-                       tooltipPosition="top">
-                    <i class="pi health-card-icon"
-                       [class.pi-check-circle]="!noveltyWarning()"
-                       [class.pi-exclamation-triangle]="noveltyWarning()"></i>
-                    <span class="health-card-label">Efeito novidade</span>
-                    <span class="health-badge"
-                          [class.health-badge--ok]="!noveltyWarning()"
-                          [class.health-badge--warning]="noveltyWarning()">
-                      {{ noveltyWarning() ? 'Atenção' : 'Saudável' }}
                     </span>
                   </div>
 
@@ -690,11 +693,11 @@
                               (click)="decisaoMenu.toggle($event)" />
                     <p-menu #decisaoMenu [popup]="true" [model]="decisaoMenuItems" appendTo="body" />
                   }
-                  <p-button label="Exportar relatório" icon="pi pi-download" [outlined]="true" severity="secondary" styleClass="w-full" />
+                  <p-button label="Exportar relatório" icon="pi pi-download" [outlined]="true" severity="secondary" styleClass="w-full" [loading]="exportingPdf()" (click)="exportPdf()" />
                 </div>
               </div>
             </div>
-            <div class="tab-body">
+            <div class="tab-body" #resultContent>
 
               <!-- 1. Hero do resultado -->
               <div class="res-hero res-hero--{{ rd.veredito }}">
